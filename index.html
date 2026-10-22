@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>The Committee of Five: Drafting the Declaration of Independence</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f3f1ea;--ink:#1c2233;--muted:#586075;--card:#ffffff;--line:#d5d1c4;--accent:#1d3157;--on:#ffffff;--gold:#8a6616}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--ink:#e8e5db;--muted:#a2a9ba;--card:#171c27;--line:#303a4c;--accent:#9db8ea;--on:#10141c;--gold:#e0b556}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Georgia,"Times New Roman",serif}
+main{max-width:860px;margin:0 auto;padding:48px 20px 72px}
+h1{font-size:clamp(2rem,6vw,3rem);line-height:1.1;margin:0 0 12px}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:32px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+.card h2{margin:0 0 6px;font-size:1.4rem}
+.card p{margin:0 0 14px;color:var(--muted);font-size:.98rem}
+a.btn{display:inline-block;background:var(--accent);color:var(--on);text-decoration:none;font-family:system-ui,sans-serif;font-weight:600;padding:10px 20px;border-radius:8px}
+a.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h3{font-size:1.1rem;margin:28px 0 6px}
+ul{margin:0;padding-left:1.2em;color:var(--muted)}
+.small{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>The Committee of Five</h1>
+  <p class="lede">A history and law game about the writing of the Declaration of Independence. Students walk through Philadelphia in 1776, hear the people who were there in their own words, match each ideal to today’s law, and catch where the ideals contradicted the society of the time.</p>
+  <div class="grid">
+    <section class="card">
+      <h2>Blocky 3D platformer</h2>
+      <p>Explore a block-built Philadelphia in 3D. Jump, climb parkour trials to reach the charge scrolls, and collect quills. Needs a computer or tablet that supports WebGL.</p>
+      <a class="btn" href="blocky-3d/">Play the 3D version</a>
+    </section>
+    <section class="card">
+      <h2>Walkable pixel-art world</h2>
+      <p>A top-down, HD-2D style Philadelphia. Walk around, talk to the people involved, and collect cards. Runs on almost any device, including phones.</p>
+      <a class="btn" href="pixel-art/">Play the pixel-art version</a>
+    </section>
+  </div>
+  <h3>For teachers</h3>
+  <ul>
+    <li>Both versions replace the written Declaration assignment: the Preamble analysis, an analysis of at least three charges, the contradiction ledger, and a final reflection.</li>
+    <li>At the end students download a PDF completion certificate with all of their writing, ready to attach in Google Classroom.</li>
+    <li>Progress is saved in each student’s own browser on their own device. Nothing is sent to a server.</li>
+    <li>Quotes are real and labeled as primary or retrospective sources. The map is stylized and not to scale, and the narration is the game’s own.</li>
+  </ul>
+  <p class="small">Built with three.js and jsPDF (MIT licensed), included in the lib folder.</p>
+</main>
+</body>
+</html>

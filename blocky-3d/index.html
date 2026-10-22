@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E🧱%3C/text%3E%3C/svg%3E">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The Committee of Five: Voxel Philadelphia, 1776</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="../lib/jspdf.umd.min.js"></script>
+<script>window.jspdf||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');</script>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#dde2ea; --page-ink:#1a2133;
+  --win1:#1c2c5c; --win2:#0c1530; --win-line:#efe9d6; --win-glow:rgba(120,150,230,.38);
+  --gold:#f0cc72; --ink:#f4f0e4; --muted:#b7bfd6; --ok:#7fe0aa; --bad:#ff8c98; --info:#9cc4ff;
+  --pix:"Pixelify Sans","Trebuchet MS",system-ui,sans-serif;
+  --serif:"IM Fell English","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#06080d; --page-ink:#e8e5db; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --page:#06080d; --page-ink:#e8e5db; color-scheme:dark; }
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--page);color:var(--page-ink);font-family:var(--pix);display:grid;place-items:center;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#000;z-index:5}
+[hidden]{display:none!important}
+button,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* 3D view */
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:#9ad0ff}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:6}
+.lab{position:absolute;transform:translate(-50%,-100%);padding:1px 8px;font-size:.78rem;background:rgba(10,18,44,.72);color:#f4f0e4;border:1px solid rgba(239,233,214,.6);border-radius:6px;white-space:nowrap;display:none}
+#compass{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 62px);z-index:20;padding:5px 14px;display:flex;align-items:center;gap:10px;font-size:.85rem;pointer-events:none}
+#arrow{display:inline-block;color:var(--gold);font-size:1.3rem;line-height:1;transition:transform .08s linear}
+
+/* HUD */
+#hud{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);display:flex;justify-content:space-between;gap:10px;padding:10px 12px;z-index:20;pointer-events:none}
+.win{background:linear-gradient(180deg,var(--win1),var(--win2));border:2px solid var(--win-line);border-radius:10px;box-shadow:0 0 0 2px #0a1128,inset 0 0 0 2px var(--win-glow),0 10px 34px rgba(0,0,0,.55);color:var(--ink)}
+#obj{max-width:min(420px,60vw);padding:8px 14px;pointer-events:auto}
+#obj b{display:block;color:var(--gold);font-size:.8rem;font-weight:600;margin-bottom:2px}
+#obj span{font-size:.92rem;line-height:1.35;display:block}
+#hr{display:flex;gap:8px;align-items:flex-start;pointer-events:auto}
+.pill{padding:6px 12px;font-size:.85rem;white-space:nowrap}
+button.pill{cursor:pointer}
+button.pill:hover{border-color:var(--gold)}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:20;padding:6px 16px;font-size:.9rem;pointer-events:none}
+
+/* dialog */
+#dlg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(940px,calc(100vw - 20px));max-height:min(64vh,540px);z-index:30;display:flex;flex-direction:column;padding:26px 22px 16px}
+#dName{position:absolute;left:18px;top:-17px;padding:4px 16px;font-weight:700;font-size:1rem;background:linear-gradient(180deg,#2a3f7a,#14224a);border:2px solid var(--win-line);border-radius:8px;color:var(--gold)}
+#dName:empty{display:none}
+#dTag{position:absolute;right:18px;top:-14px;padding:3px 12px;font-size:.78rem;font-weight:600;border-radius:999px;border:2px solid;background:#0c1530}
+#dTag.prim{color:var(--ok);border-color:var(--ok)}
+#dTag.retro{color:var(--info);border-color:var(--info)}
+#dBody{overflow:auto;font-size:clamp(15px,2.1vw,20px);line-height:1.55;padding-right:4px}
+#dBody p{margin:0 0 .7em}
+.narr{color:#dfe6fb;font-style:normal}
+.quote{font-family:var(--serif);font-size:1.18em;line-height:1.5}
+.cap{color:var(--muted);font-size:.82em}
+.lens{color:var(--info)}
+.passage{font-family:var(--serif);font-size:1.3em;line-height:2;margin:6px 0 12px;padding:10px 14px;background:rgba(0,0,0,.28);border-radius:8px}
+#dFoot{display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:8px;min-height:42px}
+.go{padding:8px 22px;border-radius:8px;border:2px solid var(--gold);background:linear-gradient(180deg,#46591f,#2d3b12);background:linear-gradient(180deg,#2a3f7a,#18285a);color:var(--gold);font-weight:700;cursor:pointer}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.go:hover:not(:disabled){filter:brightness(1.2)}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 14px;border-radius:8px;border:2px solid rgba(239,233,214,.35);background:rgba(0,0,0,.25);cursor:pointer}
+.opt:hover:not([aria-disabled="true"]),.opt:focus-visible{border-color:var(--gold);background:rgba(240,204,114,.12)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt.wrong{border-color:var(--bad);background:rgba(255,140,152,.14)}
+.opt.right{border-color:var(--ok);background:rgba(127,224,170,.16)}
+.fb p{padding:8px 12px;border-radius:8px;font-size:.92em;margin:0 0 6px}
+.fb .no{background:rgba(255,140,152,.14);border-left:4px solid var(--bad)}
+.fb .yes{background:rgba(127,224,170,.14);border-left:4px solid var(--ok)}
+.fb .miss{background:rgba(255,255,255,.07);border-left:4px dashed var(--bad)}
+.earned{display:flex;gap:12px;align-items:center;margin-top:6px;padding:8px 12px;border:2px solid var(--gold);border-radius:8px;background:rgba(240,204,114,.1)}
+.seal{flex:none;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:1.1rem;font-weight:700;border:2px solid}
+.seal.echo{color:var(--gold);border-color:var(--gold);background:rgba(240,204,114,.12)}
+.seal.ledger{color:var(--bad);border-color:var(--bad);background:rgba(255,140,152,.12)}
+.seal.insight{color:var(--info);border-color:var(--info);background:rgba(156,196,255,.12)}
+.seal.empty{color:var(--muted);border:2px dashed #55618a}
+.hls{background:none;border:none;border-bottom:2px dashed var(--muted);padding:0 2px;font:inherit;color:inherit;cursor:pointer}
+.hls:hover{background:rgba(240,204,114,.22)}
+.hls[aria-pressed="true"]{background:rgba(240,204,114,.3);border-bottom:2px solid var(--gold)}
+.hls.found{background:rgba(255,140,152,.22);border-bottom:2px solid var(--bad);cursor:default}
+.hls.decoy{border-bottom:2px dotted var(--muted);text-decoration:underline wavy var(--muted)}
+.hls.missed{border-bottom:3px double var(--bad);cursor:default}
+textarea{width:100%;padding:10px 12px;border:2px solid rgba(239,233,214,.4);border-radius:8px;background:rgba(0,0,0,.3);resize:vertical;line-height:1.5;-webkit-user-select:text;user-select:text;font-family:var(--serif);font-size:1.1em}
+.wc{font-size:.82em;color:var(--muted)}
+.wc.ok{color:var(--ok)}
+.bank{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.bank button{text-align:left;max-width:100%;border:2px solid var(--gold);background:rgba(240,204,114,.1);border-radius:8px;padding:4px 10px;font-size:.82em;cursor:pointer}
+
+/* menu */
+#menu{position:fixed;inset:calc(env(safe-area-inset-top,0px) + 56px) 0 calc(env(safe-area-inset-bottom,0px) + 10px);margin:auto;width:min(860px,calc(100vw - 20px));max-height:calc(100% - 70px);z-index:40;display:flex;flex-direction:column;padding:14px 18px 16px;height:fit-content}
+#tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+#tabs button{padding:6px 14px;border-radius:8px;border:2px solid rgba(239,233,214,.35);background:rgba(0,0,0,.25);cursor:pointer}
+#tabs button[aria-selected="true"]{border-color:var(--gold);color:var(--gold)}
+#mbody{overflow:auto;font-size:clamp(14px,1.9vw,18px);line-height:1.5;-webkit-user-select:text;user-select:text}
+#mbody h3{margin:.8em 0 .3em;color:var(--gold);font-weight:600}
+.dl{font-family:var(--serif);font-size:1.15em;margin:0 0 10px;color:#2b2113;background:#e8d9ac;padding:8px 12px;border-radius:4px}
+.dl.struck .tx{text-decoration:line-through;text-decoration-color:#9a2a37;text-decoration-thickness:2px}
+.dl .dn{display:block;font-family:var(--pix);font-size:.7em;opacity:.8}
+.dl.struck .dn{color:#8a1f2c;font-weight:700;opacity:1}
+.dl.lab{background:none;color:var(--gold);font-family:var(--pix);font-size:.95em;padding:0}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:6px 0 12px}
+.slot{display:flex;gap:10px;padding:8px;border:2px solid #3a4880;border-radius:8px;background:rgba(0,0,0,.25)}
+.slot.got{border-color:rgba(239,233,214,.5)}
+.slot b{display:block;line-height:1.25;font-size:.92em}
+.slot .s{display:block;font-size:.76em;color:var(--muted)}
+.slot .bl{display:block;font-size:.76em;margin-top:3px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}
+.stats div{padding:6px 14px;border:2px solid #3a4880;border-radius:8px}
+.stats b{display:block;font-size:1.4em;color:var(--gold);font-weight:700}
+
+/* title */
+#title{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(10,16,40,.35),rgba(4,6,16,.78));padding:16px}
+#title .box{width:min(640px,100%);padding:26px 26px 20px;text-align:center}
+#title h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.1rem,7vw,3.6rem);line-height:1.05;margin:0 0 6px;color:var(--gold);text-shadow:0 0 22px rgba(240,204,114,.45)}
+#title p{margin:0 0 12px;line-height:1.5}
+#title .sub{color:#dfe6fb;font-size:1.05rem}
+#title .small{color:var(--muted);font-size:.82rem}
+#title input{padding:9px 12px;border:2px solid rgba(239,233,214,.5);border-radius:8px;background:rgba(0,0,0,.3);min-width:min(280px,100%);text-align:center;-webkit-user-select:text;user-select:text}
+#title .row{justify-content:center}
+
+/* toast & touch */
+#toast{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 108px);z-index:60;padding:8px 16px;border-radius:14px;font-size:.92rem;line-height:1.3;max-width:min(300px,46vw);text-align:right;pointer-events:none}
+#touch{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);display:none;justify-content:space-between;padding:0 14px;z-index:25;pointer-events:none}
+@media (pointer:coarse){#touch{display:flex}}
+body.modal #touch,body.modal #hint{display:none}
+#dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(3,54px);gap:3px;pointer-events:auto}
+#dpad button,#acts button{border-radius:50%;border:2px solid var(--win-line);background:rgba(12,21,48,.72);color:var(--gold);font-size:1.2rem;font-weight:700;touch-action:none}
+#dpad button{border-radius:12px}
+#acts{display:flex;gap:12px;align-items:flex-end;pointer-events:auto}
+#acts button{width:62px;height:62px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+@media print{#stage,#hud,#touch{display:none}}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-label="A 3D voxel view of Philadelphia, 1776. Use the keyboard or touch controls to play."></canvas>
+<div id="labels" aria-hidden="true"></div>
+</div>
+
+<div id="hud">
+  <div id="obj" class="win" aria-live="polite"><b>Objective</b><span id="objT"></span></div>
+  <div id="hr">
+    <span class="win pill" id="pts" aria-live="polite">0 points</span>
+    <span class="win pill" id="qc"></span>
+    <button class="win pill" id="bBinder" type="button">Satchel <span id="bc">0/0</span></button>
+  </div>
+</div>
+<div id="hint" class="win" hidden></div>
+<div id="compass" class="win" hidden aria-hidden="true"><span id="arrow">▲</span><span id="cdist"></span></div>
+<div id="toast" class="win" role="status" aria-live="polite" hidden></div>
+
+<div id="dlg" class="win" hidden role="dialog" aria-label="Conversation">
+  <div id="dName"></div><div id="dTag" hidden></div>
+  <div id="dBody"></div>
+  <div id="dFoot"></div>
+</div>
+
+<div id="menu" class="win" hidden role="dialog" aria-label="Clerk’s satchel">
+  <div id="tabs" role="tablist"></div>
+  <div id="mbody"></div>
+  <div class="row"><button class="go" id="mClose" type="button">Close</button></div>
+</div>
+
+<div id="title">
+  <div class="win box">
+    <h1>The Committee of Five</h1>
+    <p class="sub">Philadelphia, June 1776. Explore a blocky Philadelphia, climb parkour trials, speak with the people who made the Declaration, and test their ideals against the law.</p>
+    <p><label for="nm" class="small">Your name, for your case file</label><br><input id="nm" type="text" maxlength="60" autocomplete="name"></p>
+    <div class="row"><button class="go" id="begin" type="button">Begin</button><button class="go" id="reset" type="button" hidden>Start over</button></div>
+    <p class="small" style="margin-top:12px">Move: WASD. Jump: Space. Sprint: Shift. Look: drag the mouse or use the arrow keys. Talk: E or Enter. Satchel: Esc. Quotes are real and labeled by source. The map is stylized, not to scale, and the narration is the game’s own.</p>
+  </div>
+</div>
+
+<div id="touch">
+  <div id="dpad">
+    <span></span><button data-k="f" aria-label="Forward">▲</button><span></span>
+    <button data-k="l" aria-label="Left">◀</button><span></span><button data-k="r" aria-label="Right">▶</button>
+    <span></span><button data-k="b" aria-label="Back">▼</button><span></span>
+  </div>
+  <div id="acts"><button id="tMenu" aria-label="Satchel">☰</button><button id="tJ" aria-label="Jump">⤒</button><button id="tA" aria-label="Talk">A</button></div>
+</div>
+
+<noscript>This game needs JavaScript.</noscript>
+<script src="../lib/three.min.js"></script>
+<script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
+<script>
+(function(){
+"use strict";
+
+function $(id){return document.getElementById(id);}
+function el(tag,attrs){
+  var n=document.createElement(tag);
+  if(attrs){for(var k in attrs){var v=attrs[k];if(v===false||v==null)continue;
+    if(k==="class")n.className=v;else if(k.slice(0,2)==="on")n.addEventListener(k.slice(2),v);
+    else if(v===true)n.setAttribute(k,"");else n.setAttribute(k,v);}}
+  for(var i=2;i<arguments.length;i++){var c=arguments[i];if(c==null||c===false)continue;
+    if(Array.isArray(c)){c.forEach(function(x){if(x!=null&&x!==false)n.append(x.nodeType?x:document.createTextNode(x));});}
+    else n.append(c.nodeType?c:document.createTextNode(c));}
+  return n;
+}
+function wc(s){var m=(s||"").trim().match(/\S+/g);return m?m.length:0;}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hex(c){return[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+function shade(c,f){return"#"+hex(c).map(function(v){v=f<0?v*(1+f):v+(255-v)*f;return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0");}).join("");}
+var REDUCED=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============ CONTENT: sources ============ */
+var SRC={
+ lee:{who:"Richard Henry Lee",role:"Delegate from Virginia, moving the resolution",when:"June 7, 1776",kind:"Primary source",retro:false,
+  text:"Resolved, That these United Colonies are, and of right ought to be, free and independent States, that they are absolved from all allegiance to the British Crown, and that all political connection between them and the State of Great Britain is, and ought to be, totally dissolved.",
+  short:"these United Colonies are, and of right ought to be, free and independent States",yr:1776},
+ open:{who:"The Declaration of Independence",role:"Opening sentence, final text",when:"July 4, 1776",kind:"Primary source",retro:false,
+  text:"When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature’s God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.",
+  short:"a decent respect to the opinions of mankind requires that they should declare the causes",yr:1776},
+ adams22:{who:"John Adams",role:"Committee member, recalling why Jefferson was asked to write the draft",when:"Letter to Timothy Pickering, August 22, 1822",kind:"Retrospective: written 46 years later",retro:true,
+  text:"Reason first. You were a Virginian, and a Virginian ought to appear at the head of this business. Reason second. I was obnoxious, suspected, and unpopular. You were very much otherwise. Reason third. You could write ten times better than I could.",
+  short:"You could write ten times better than I could",yr:1822},
+ mason1:{who:"George Mason",role:"Virginia Declaration of Rights, Section 1",when:"Adopted June 12, 1776",kind:"Primary source",retro:false,
+  text:"That all men are by nature equally free and independent, and have certain inherent rights, of which, when they enter into a state of society, they cannot, by any compact, deprive or divest their posterity; namely, the enjoyment of life and liberty, with the means of acquiring and possessing property, and pursuing and obtaining happiness and safety.",
+  short:"all men are by nature equally free and independent",yr:1776},
+ mason2:{who:"George Mason",role:"Virginia Declaration of Rights, Section 2",when:"Adopted June 12, 1776",kind:"Primary source",retro:false,
+  text:"That all power is vested in, and consequently derived from, the people; that magistrates are their trustees and servants, and at all times amenable to them.",
+  short:"magistrates are their trustees and servants",yr:1776},
+ jeffA:{who:"Thomas Jefferson",role:"Principal author, explaining his purpose",when:"Letter to Henry Lee, May 8, 1825",kind:"Retrospective: written 49 years later",retro:true,
+  text:"Not to find out new principles, or new arguments, never before thought of, not merely to say things which had never been said before; but to place before mankind the common sense of the subject, in terms so plain and firm as to command their assent … it was intended to be an expression of the American mind.",
+  short:"an expression of the American mind",yr:1825},
+ jeffB:{who:"Thomas Jefferson",role:"Naming the sources of the Declaration’s ideas",when:"Letter to Henry Lee, May 8, 1825",kind:"Retrospective: written 49 years later",retro:true,
+  text:"All its authority rests then on the harmonising sentiments of the day, whether expressed in conversation, in letters, printed essays, or in the elementary books of public right, as Aristotle, Cicero, Locke, Sidney, &c.",
+  short:"the harmonising sentiments of the day",yr:1825},
+ locke:{who:"John Locke",role:"Second Treatise of Government",when:"1689",kind:"Primary source",retro:false,
+  text:"The state of nature has a law of nature to govern it, which obliges every one: and reason, which is that law, teaches all mankind, who will but consult it, that being all equal and independent, no one ought to harm another in his life, health, liberty, or possessions.",
+  short:"no one ought to harm another in his life, health, liberty, or possessions",yr:1689},
+ prudence:{who:"The Continental Congress",role:"Declaration of Independence, final text",when:"July 4, 1776",kind:"Primary source",retro:false,
+  text:"Prudence, indeed, will dictate that Governments long established should not be changed for light and transient causes … But when a long train of abuses and usurpations, pursuing invariably the same Object evinces a design to reduce them under absolute Despotism, it is their right, it is their duty, to throw off such Government.",
+  short:"it is their right, it is their duty, to throw off such Government",yr:1776},
+ abigail:{who:"Abigail Adams",role:"Writing to her husband John, a delegate in Philadelphia",when:"Letter, March 31, 1776",kind:"Primary source",retro:false,
+  text:"I desire you would Remember the Ladies, and be more generous and favourable to them than your ancestors. Do not put such unlimited power into the hands of the Husbands. Remember all Men would be tyrants if they could.",
+  short:"Remember all Men would be tyrants if they could",yr:1776},
+ johnReply:{who:"John Adams",role:"Replying to Abigail",when:"Letter, April 14, 1776",kind:"Primary source",retro:false,
+  text:"As to your extraordinary Code of Laws, I cannot but laugh. We have been told that our Struggle has loosened the bonds of Government every where; that Children and Apprentices were disobedient; that Schools and Colleges were grown turbulent; that Indians slighted their Guardians and Negroes grew insolent to their Masters."},
+ franklin:{who:"Benjamin Franklin",role:"As recalled by Jefferson, watching Congress edit the draft",when:"Jefferson’s Autobiography, written 1821",kind:"Retrospective: written 45 years later",retro:true,
+  text:"I have made it a rule, whenever in my power, to avoid becoming the draughtsman of papers to be reviewed by a public body.",
+  short:"avoid becoming the draughtsman of papers to be reviewed by a public body",yr:1821},
+ draftClause:{who:"Thomas Jefferson",role:"The cut grievance in his draft",when:"Rough draft, June 1776",kind:"Primary source",retro:false,
+  text:"He has waged cruel war against human nature itself, violating it’s most sacred rights of life & liberty in the persons of a distant people who never offended him, captivating & carrying them into slavery in another hemisphere …",
+  short:"He has waged cruel war against human nature itself",yr:1776},
+ jeffAuto:{who:"Thomas Jefferson",role:"Explaining why the clause was cut",when:"Autobiography, written 1821",kind:"Retrospective: written 45 years later",retro:true,
+  text:"The clause too, reprobating the enslaving the inhabitants of Africa, was struck out in complaisance to South Carolina and Georgia, who had never attempted to restrain the importation of slaves, and who on the contrary still wished to continue it. Our northern brethren also I believe felt a little tender under those censures; for tho’ their people have very few slaves themselves yet they had been pretty considerable carriers of them to others.",
+  short:"struck out in complaisance to South Carolina and Georgia",yr:1821},
+ jeffNotes:{who:"Thomas Jefferson",role:"On slavery, in his only book",when:"Notes on the State of Virginia, 1785",kind:"Primary source",retro:false,
+  text:"Indeed I tremble for my country when I reflect that God is just: that his justice cannot sleep for ever.",
+  short:"I tremble for my country when I reflect that God is just",yr:1785},
+ johnson:{who:"Samuel Johnson",role:"English writer criticizing the American cause",when:"Taxation No Tyranny, 1775",kind:"Primary source",retro:false,
+  text:"…how is it that we hear the loudest yelps for liberty among the drivers of negroes?",
+  short:"the loudest yelps for liberty among the drivers of negroes",yr:1775},
+ adams3:{who:"John Adams",role:"Delegate from Massachusetts, writing to Abigail",when:"Letter, July 3, 1776",kind:"Primary source",retro:false,
+  text:"The Second Day of July 1776, will be the most memorable Epocha, in the History of America. I am apt to believe that it will be celebrated, by succeeding Generations, as the great anniversary Festival.",
+  short:"the most memorable Epocha, in the History of America",yr:1776},
+ pledge:{who:"The delegates",role:"Final sentence of the Declaration",when:"July 4, 1776",kind:"Primary source",retro:false,
+  text:"And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.",
+  short:"our Lives, our Fortunes and our sacred Honor",yr:1776},
+ seneca:{who:"Declaration of Sentiments",role:"Seneca Falls Convention, New York",when:"July 1848",kind:"Primary source",retro:false,
+  text:"We hold these truths to be self-evident: that all men and women are created equal; that they are endowed by their Creator with certain inalienable rights; that among these are life, liberty, and the pursuit of happiness.",
+  short:"all men and women are created equal",yr:1848},
+ douglass:{who:"Frederick Douglass",role:"Speaking in Rochester, New York",when:"“What to the Slave Is the Fourth of July?” July 5, 1852",kind:"Primary source",retro:false,
+  text:"This Fourth [of] July is yours, not mine. You may rejoice, I must mourn.",
+  short:"This Fourth [of] July is yours, not mine. You may rejoice, I must mourn.",yr:1852},
+ lincoln:{who:"Abraham Lincoln",role:"President of the United States",when:"Gettysburg Address, November 19, 1863",kind:"Primary source",retro:false,
+  text:"Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.",
+  short:"dedicated to the proposition that all men are created equal",yr:1863},
+ mlk:{who:"Martin Luther King Jr.",role:"Speaking at the March on Washington",when:"August 28, 1963",kind:"Primary source (short excerpt)",retro:false,
+  text:"…a promissory note to which every American was to fall heir.",
+  short:"a promissory note to which every American was to fall heir",yr:1963}
+};
+
+/* ============ CONTENT: cards ============ */
+var CARDS={
+ insight_causes:{kind:"insight",title:"Declaring the Causes",sub:"Why a legal break needs reasons",blurb:"A break from a government is a serious legal and political act. The Declaration’s first sentence promises reasons so the world can judge whether the break was justified."},
+ insight_evidence:{kind:"insight",title:"Evidence Tag",sub:"Weighing a source written decades later",blurb:"Lawyers ask who made a statement, when, and why. Adams’s 1822 recollection is useful, but you check it against records made in 1776."},
+ echo_equal:{kind:"echo",title:"Equal Protection Clause",sub:"14th Amendment, 1868",blurb:"No state may “deny to any person within its jurisdiction the equal protection of the laws.” Courts relied on it in Brown v. Board of Education (1954) to strike down segregated public schools."},
+ echo_due:{kind:"echo",title:"Due Process of Law",sub:"5th and 14th Amendments",blurb:"Government may not take life, liberty, or property without fair procedures: notice, a hearing, and an impartial decision-maker."},
+ echo_loving:{kind:"echo",title:"Loving v. Virginia",sub:"Supreme Court, 1967",blurb:"The Court struck down bans on interracial marriage and called marriage “one of the vital personal rights essential to the orderly pursuit of happiness by free men.”"},
+ echo_vote:{kind:"echo",title:"Voting Rights Act",sub:"Federal law, 1965",blurb:"Protects access to the ballot and builds on the 15th (race), 19th (sex), 24th (poll taxes), and 26th (age 18) Amendments. Consent only counts if people can give it."},
+ echo_art5:{kind:"echo",title:"Article V",sub:"How the people alter the Constitution",blurb:"Amendments are proposed by two-thirds of Congress (or a convention called by two-thirds of the states) and ratified by three-fourths of the states. It is a lawful way to “alter” government."},
+ echo_veto:{kind:"echo",title:"Veto and Override",sub:"Article I, Section 7",blurb:"The President can reject a bill, but two-thirds of each house of Congress can override. No single official has the last word on the law."},
+ echo_judges:{kind:"echo",title:"Judicial Independence",sub:"Article III, Section 1",blurb:"Federal judges “hold their Offices during good Behaviour,” and their pay cannot be reduced while they serve."},
+ echo_armies:{kind:"echo",title:"Civilian Control of the Military",sub:"Article I, Section 8, and Article II",blurb:"Congress raises and funds armies (army spending can’t be appropriated for more than two years at a time), the President is a civilian Commander in Chief, and the Posse Comitatus Act (1878) limits the military’s role in domestic law enforcement."},
+ echo_quarter:{kind:"echo",title:"Third Amendment",sub:"Bill of Rights, 1791",blurb:"“No Soldier shall, in time of peace be quartered in any house, without the consent of the Owner.” It is rarely litigated, which says something about how well the problem was solved."},
+ echo_tax:{kind:"echo",title:"Revenue Bills Start in the House",sub:"Article I, Section 7",blurb:"Tax bills must begin in the House of Representatives, whose members are elected directly by the people. Still debated: residents of Washington, D.C., pay federal taxes but have no voting member of Congress."},
+ echo_jury:{kind:"echo",title:"Right to Jury Trial",sub:"6th and 7th Amendments",blurb:"The Sixth guarantees “an impartial jury” in criminal prosecutions. The Seventh preserves jury trial in many civil cases."},
+ echo_venue:{kind:"echo",title:"Trial Where the Crime Occurred",sub:"Article III, Section 2, and 6th Amendment",blurb:"Criminal trials are held in the state and district where the crime was committed, near the witnesses and before a jury from the community."},
+ insight_compromise:{kind:"insight",title:"Compromise at the Drafting Table",sub:"Legislative history",blurb:"A deleted clause is evidence. The final text reflects bargaining among delegations, not one author’s unedited views."},
+ echo_13:{kind:"echo",title:"13th Amendment",sub:"Ratified 1865",blurb:"“Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States.” The exception clause is still argued over."},
+ insight_notlaw:{kind:"insight",title:"Principles, Not a Statute",sub:"What kind of document is it?",blurb:"The Declaration announces a decision and explains it. Courts don’t enforce its text as law, but its principles shaped how later Americans argued for and wrote law."},
+ led_ladies:{kind:"ledger",title:"Remember the Ladies",sub:"A gap between the words and 1776",blurb:"Abigail Adams asked her husband to “Remember the Ladies” in the new laws. He laughed it off. Married women stayed largely without a separate legal identity, and a national right to vote came only with the 19th Amendment (1920)."},
+ echo_seneca:{kind:"echo",title:"Declaration of Sentiments",sub:"Seneca Falls, 1848",blurb:"Organizers copied the Declaration’s form and changed its opening to “all men and women are created equal.” The 19th Amendment followed in 1920."},
+ echo_douglass:{kind:"echo",title:"What to the Slave Is the Fourth of July?",sub:"Frederick Douglass, 1852",blurb:"Douglass praised the signers as brave men and then asked an audience to face the gap between their words and slavery."},
+ echo_lincoln:{kind:"echo",title:"Gettysburg Address",sub:"Abraham Lincoln, 1863",blurb:"Lincoln dated the nation to 1776 and its purpose to “the proposition that all men are created equal,” making the Declaration a standard for judging the nation."},
+ echo_mlk:{kind:"echo",title:"The Promissory Note",sub:"Martin Luther King Jr., 1963",blurb:"King described the Declaration’s promise as a note the nation had not yet paid in full. The Civil Rights Act (1964) and Voting Rights Act (1965) followed."}
+};
+
+/* ============ CONTENT: highlight sets ============ */
+var HL_EQ={prompt:"Compare this sentence with how the law treated people in 1776. Tap the phrases that did not match reality, then check. At least one phrase is a trap, and you get three tries.",segs:[
+ {t:"We hold these truths to be "},
+ {t:"self-evident",k:1,c:0,why:"Consistent with the thinking of the time. Calling a truth self-evident claims reason can see it without proof, in the style of Enlightenment natural-law writers. It is a claim, not a contradiction. (Franklin is generally credited with changing Jefferson’s “sacred & undeniable” to “self-evident.”)"},
+ {t:", that "},
+ {t:"all men",k:1,c:1,id:"led_men",title:"Who counts as “men”?",why:"In 1776 the law treated many people as something other than equal “men.” Roughly one in five colonists was of African descent, most of them enslaved and counted as property. Women could not vote, and married women lost most property rights under coverture. Native nations were treated as separate peoples."},
+ {t:" are "},
+ {t:"created equal",k:1,c:1,id:"led_equal",title:"Equal in creation, unequal in law",why:"Equal in creation was not equal in law. Enslaved people were legal property. Indentured servants could be bound for years. Voting and holding office often required owning property, and many colonies limited them by religion as well."},
+ {t:"."}]};
+var HL_RIGHTS={prompt:"Now test the claim. Tap the phrases that did not match how the law treated people in 1776. At least one phrase is a trap.",segs:[
+ {t:"…that they are "},
+ {t:"endowed by their Creator",k:1,c:0,why:"Not a contradiction by itself. Placing rights in the Creator rather than in government means no government can claim to have granted them, which is what made the argument strong against the Crown and, later, against slavery and segregation."},
+ {t:" with certain "},
+ {t:"unalienable Rights",k:1,c:1,id:"led_unalien",title:"“Unalienable” rights, treated as transferable",why:"To alienate is to transfer. A truly unalienable right can’t be sold or taken, yet slavery treated a person’s liberty as something that could be seized, bought, inherited, and sold."},
+ {t:", that among these are Life, "},
+ {t:"Liberty",k:1,c:1,id:"led_liberty",title:"Liberty for some",why:"Liberty meant freedom from arbitrary power, yet hundreds of thousands lived in slavery. Under coverture a married woman’s legal identity was folded into her husband’s. Even free Black colonists faced limits on movement, testimony, and property."},
+ {t:" and "},
+ {t:"the pursuit of Happiness",k:1,c:1,id:"led_happy",title:"Pursuit of happiness without property",why:"Pursuing happiness depended on owning property, signing contracts, and keeping a family together. Enslaved people could be sold away from their families and could not own property or make contracts, and married women could make few contracts of their own."},
+ {t:"."}]};
+var HL_CONSENT={prompt:"Last test for the Preamble. Tap the phrases where the practice of 1776 fell short of the principle. At least one is a trap.",segs:[
+ {t:"…Governments are instituted among Men, "},
+ {t:"deriving their just powers",k:1,c:0,why:"This matches colonial practice. Colonies had elected assemblies and local self-government. The Declaration’s complaint is that the Crown broke that pattern."},
+ {t:" from "},
+ {t:"the consent of the governed",k:1,c:1,id:"led_consent",title:"Consent of whom?",why:"Most people governed in 1776 had no voice in choosing anyone: women, enslaved people, most free Black men, Native peoples, and, in most colonies, men without enough property. The principle was bigger than the practice, which is why later movements could use it as leverage."},
+ {t:", —That whenever any Form of Government becomes destructive of these ends, it is "},
+ {t:"the Right of the People to alter or to abolish it",k:1,c:1,id:"led_people",title:"A right to revolt, for whom?",why:"The colonists claimed a right to throw off a government they had not consented to. Yet enslaved people who rebelled or fled were treated as criminals, and Loyalists were fined, disarmed, or driven out by the new state governments. “The People” meant the revolutionaries’ side."},
+ {t:"…"}]};
+var HL_STRUCK={prompt:"Now read the version Congress kept. Tap the phrases where the colonists’ treatment of others contradicts the ideals in the Preamble. One phrase is a trap, and you get three tries.",segs:[
+ {t:"He has "},
+ {t:"excited domestic insurrections amongst us",k:1,c:1,id:"led_insurrect",title:"Liberty sought, rebellion alleged",why:"In November 1775 Virginia’s royal governor, Lord Dunmore, promised freedom to enslaved people of rebel owners who joined the British. Thousands of enslaved people ultimately sought freedom behind British lines during the war. The Declaration says liberty is unalienable, then lists their pursuit of it as an offense by the King."},
+ {t:", and has endeavoured to bring on "},
+ {t:"the inhabitants of our frontiers",k:1,c:0,why:"Only partly fair. Frontier settlers did face real violence in this period. But it is worth asking whose land the “frontier” was. On its own, this phrase isn’t the contradiction. The next one is."},
+ {t:", "},
+ {t:"the merciless Indian Savages",k:1,c:1,id:"led_savages",title:"The “merciless Indian Savages”",why:"The phrase paints many distinct Native nations as one enemy. They had their own governments, land claims, and treaties, and many sided with the Crown because Britain had tried to limit settlement west of the Appalachians (the Proclamation of 1763). Native peoples were never asked for consent either."},
+ {t:", whose known rule of warfare, is an undistinguished destruction of all ages, sexes and conditions."}]};
+[HL_EQ,HL_RIGHTS,HL_CONSENT,HL_STRUCK].forEach(function(hl){hl.segs.forEach(function(sg){if(sg.k&&sg.c&&sg.id)CARDS[sg.id]={kind:"ledger",title:sg.title,sub:"A gap between the words and 1776",blurb:sg.why};});});
+var TOTAL=Object.keys(CARDS).length;
+
+/* ============ CONTENT: charges ============ */
+var GRIEVANCES=[
+ {id:"g_assent",title:"Laws blocked",at:[22,23],text:"He has refused his Assent to Laws, the most wholesome and necessary for the public good.",
+  ctx:"Colonial assemblies passed laws, but royal governors could veto them, and the Crown could cancel them later through the Privy Council in London. Waiting for approval from across the ocean could take a long time.",
+  check:{prompt:"How does the U.S. Constitution answer the worry that one official can block the people’s laws?",opts:[
+   {t:"The President can veto a bill, but two-thirds of both houses of Congress can override the veto.",ok:1,why:"Article I, Section 7 gives the President a veto, but not the last word. Congress can override it."},
+   {t:"The President cannot veto bills at all.",ok:0,why:"The President can veto. The check is that Congress can override."},
+   {t:"Only the Supreme Court can approve laws before they take effect.",ok:0,why:"Courts review laws after they are passed, in cases brought before them. They do not pre-approve them."}],card:"echo_veto"}},
+ {id:"g_judges",title:"Judges at the King’s pleasure",at:[34,23],text:"He has obstructed the Administration of Justice, by refusing his Assent to Laws for establishing Judiciary powers. He has made Judges dependent on his Will alone, for the tenure of their offices, and the amount and payment of their salaries.",
+  ctx:"In England, judges had held office during good behavior since 1701. In the colonies, judges generally served at the Crown’s pleasure. In 1772 the Crown announced that Massachusetts judges would be paid by the Crown rather than by the colonial assembly.",
+  check:{prompt:"How does the Constitution try to keep federal judges independent of whoever holds power?",opts:[
+   {t:"Federal judges hold office “during good Behaviour,” and their pay can’t be reduced while they serve (Article III, Section 1).",ok:1,why:"Tenure and protected pay mean a judge can rule against the government without fear of being fired or having pay cut."},
+   {t:"Federal judges are elected to four-year terms by the voters.",ok:0,why:"Some state judges are elected, but federal judges are appointed and serve until they resign, retire, or are removed."},
+   {t:"The President may remove federal judges whenever he disagrees with their rulings.",ok:0,why:"Only Congress can remove a federal judge, through impeachment and conviction."}],card:"echo_judges"}},
+ {id:"g_armies",title:"Armies in peacetime",at:[42,25],text:"He has kept among us, in times of peace, Standing Armies without the Consent of our legislatures. He has affected to render the Military independent of and superior to the Civil power.",
+  ctx:"After the Seven Years’ War, Britain kept thousands of regular troops in North America. In 1768 troops arrived in Boston to support customs officers, and the tension there led to the Boston Massacre in 1770.",
+  check:{prompt:"Which feature of the Constitution best answers the fear of a standing army that answers to no one?",opts:[
+   {t:"Congress alone raises and funds armies, with no army funding for more than two years at a time, and a civilian is Commander in Chief.",ok:1,why:"Article I, Section 8 gives Congress the power to raise armies and limits their funding. Article II makes the President, a civilian, Commander in Chief."},
+   {t:"The Constitution bans the country from having any army in peacetime.",ok:0,why:"There is no such ban. The Constitution allows armies but puts Congress and civilian leaders in control."},
+   {t:"State governors control the national military in peacetime.",ok:0,why:"State militias exist, but the national military answers to Congress and the President."}],card:"echo_armies"}},
+ {id:"g_quarter",title:"Soldiers in our homes",at:[40,31],text:"For quartering large bodies of armed troops among us.",
+  ctx:"The Quartering Acts of 1765 and 1774 required colonies to house and supply British troops, in some cases in buildings such as barns and unoccupied houses. Colonists feared the same power could reach their own homes.",
+  check:{prompt:"Which part of the Bill of Rights speaks directly to this complaint?",opts:[
+   {t:"The Third Amendment.",ok:1,why:"The Third Amendment bars quartering soldiers in a house in peacetime without the owner’s consent."},
+   {t:"The Second Amendment.",ok:0,why:"The Second Amendment concerns the right to keep and bear arms, not soldiers living in homes."},
+   {t:"The Eighth Amendment.",ok:0,why:"The Eighth Amendment bars excessive bail and fines and cruel and unusual punishments."}],card:"echo_quarter"}},
+ {id:"g_tax",title:"Taxes without consent",at:[34,35],text:"For imposing Taxes on us without our Consent.",
+  ctx:"After the Seven Years’ War, Parliament taxed the colonies directly through the Stamp Act (1765) and later the Townshend duties and the Tea Act. Colonists elected no members of Parliament. In 1766 Parliament asserted the power to make laws for the colonies “in all cases whatsoever.”",
+  check:{prompt:"How does the Constitution try to prevent “taxation without representation”?",opts:[
+   {t:"Bills for raising revenue must start in the House of Representatives, whose members are elected directly by the people.",ok:1,why:"Article I, Section 7 puts the power to originate taxes in the chamber closest to voters. (Residents of D.C. pay federal taxes without a voting member of Congress, which is still debated.)"},
+   {t:"Only the President may set tax rates.",ok:0,why:"Taxing is a power of Congress. The President signs or vetoes the bills."},
+   {t:"Taxes require unanimous approval of the states.",ok:0,why:"Under the Articles of Confederation, unanimity made taxing nearly impossible, one reason the Constitution replaced it."}],card:"echo_tax"}},
+ {id:"g_jury",title:"Jury trials taken away",at:[21,31],text:"For depriving us in many cases, of the benefits of Trial by Jury.",
+  ctx:"To enforce customs laws, Britain expanded vice-admiralty courts, where a judge decided cases without a jury. Colonial juries were reluctant to convict local merchants of smuggling, so moving those cases away from juries removed a local check.",
+  check:{prompt:"Which amendments protect jury trials today?",opts:[
+   {t:"The Sixth (criminal cases) and Seventh (many civil cases).",ok:1,why:"The Sixth guarantees an impartial jury in criminal prosecutions, and the Seventh preserves jury trial in many civil cases."},
+   {t:"The Fourth and Fifth Amendments only.",ok:0,why:"The Fourth covers searches and seizures. The Fifth covers grand juries, self-incrimination, and due process. The jury guarantees are in the Sixth and Seventh."},
+   {t:"No amendment. Jury trial is only a tradition.",ok:0,why:"It is written into the Constitution, in Article III and the Sixth and Seventh Amendments."}],card:"echo_jury"}},
+ {id:"g_beyond",title:"Trials across the ocean",at:[26,35],text:"For transporting us beyond Seas to be tried for pretended offences.",
+  ctx:"In 1769 Parliament revived an old statute that allowed treason suspects in the colonies to be sent to England for trial. The Administration of Justice Act of 1774 likewise moved trials of officials accused in Massachusetts out of the colony. Either way, justice moved far from the witnesses and a jury who knew the facts.",
+  check:{prompt:"What protects a person today against being hauled to a distant place for trial?",opts:[
+   {t:"The Constitution requires criminal trials in the state and district where the crime was committed (Article III, Section 2, and the Sixth Amendment).",ok:1,why:"Venue rules keep prosecutions near the witnesses and the community whose jurors will judge the facts."},
+   {t:"Nothing. Prosecutors may choose any court in the country.",ok:0,why:"Venue rules limit that choice. A prosecution generally has to be brought where the crime occurred."},
+   {t:"Only the Third Amendment.",ok:0,why:"The Third Amendment is about quartering soldiers, not where trials are held."}],card:"echo_venue"}}
+];
+
+/* ============ ENCOUNTERS (beats) ============ */
+function N(t){return{k:"n",t:t};}
+function Q(s){return{k:"q",s:SRC[s]};}
+function L(term,t){return{k:"l",term:term,t:t};}
+function MC(key,ck){return{k:"mc",key:key,ck:ck};}
+function HB(key,hl){return{k:"hl",key:key,hl:hl};}
+function NT(key,o){return{k:"note",key:key,o:o};}
+function opt(t,ok,why){return{t:t,ok:ok,why:why};}
+
+var ENC=[
+ {id:"lee",npc:"lee",ch:0,after:function(){S.ch=1;},beats:function(){return[
+  N("Richard Henry Lee of Virginia stands on the State House steps with papers in hand. More than a year of war has passed since Lexington and Concord. On June 7 he moved that the colonies be declared independent, and Congress has delayed the vote while some delegations wait for instructions."),
+  Q("lee"),
+  N("On June 11, Congress named a Committee of Five to prepare a declaration explaining the decision. Its opening sentence makes a promise."),
+  Q("open"),
+  MC("lee.m",{prompt:"Lee’s resolution already declared independence. Why does the Declaration then promise, in its first sentence, to “declare the causes”?",opts:[
+   opt("A government that breaks a legal bond owes the world reasons. Explaining the causes presents the break as justified, not as a rebellion for its own sake.",1,"Reasons turn a bare act of defiance into a legal and moral case that other nations and the colonists themselves can judge."),
+   opt("Courts of the time required every political act to be explained in writing.",0,"No such rule existed. The reasons were meant to persuade, which is why the document reads like a complaint filed before the world."),
+   opt("Reasons weren’t needed. The first sentence was just decoration.",0,"The whole document is built on reasons: a theory, a list of facts, and a conclusion.")],card:"insight_causes"}),
+  N("Lee points you toward the City Tavern, where John Adams is holding forth. Adams can tell you why the pen went to a Virginian.")];}},
+ {id:"adams1",npc:"adams",ch:1,after:function(){S.ch=2;},beats:function(){return[
+  N("John Adams of Massachusetts stands outside the City Tavern. He is on the Committee of Five, and he has strong opinions about who should write the draft."),
+  Q("adams22"),
+  L("Evidence and provenance","Before relying on a statement, ask who made it, when, and for what purpose. Lee’s resolution is a record made at the time. Adams’s account was written decades later, when memory and reputation both play a part. Lawyers weigh the two differently."),
+  MC("adams1.m",{prompt:"Adams wrote this account in 1822, about 46 years after the events. How should a careful lawyer treat it as evidence of what happened in June 1776?",opts:[
+   opt("As conclusive proof, because Adams was there.",0,"Being present helps, but memory fades and people shape stories about their own roles. One witness decades later is rarely conclusive."),
+   opt("As useful but retrospective evidence, to be checked against records made at the time.",1,"Adams was a firsthand witness, but his account is late and self-interested. A lawyer corroborates it with records from 1776, such as the journals of Congress and letters written that summer."),
+   opt("As worthless, because memories are always wrong.",0,"Too strong. Retrospective accounts can be valuable, especially from participants. They simply carry less weight standing alone.")],card:"insight_evidence"}),
+  N("Down at the east end of the plaza, a post rider from Virginia has just arrived with a printed copy of something Adams’s Virginia colleagues are very excited about.")];}},
+ {id:"rider",npc:"rider",ch:2,after:function(){S.ch=3;},beats:function(){return[
+  N("A post rider shakes road dust from his cloak. Virginia has just adopted a Declaration of Rights written mostly by George Mason, and news of it is traveling by newspaper and satchel through the colonies that June."),
+  Q("mason1"),
+  L("Natural law and positive law","Natural law is the idea that some rights exist by nature and reason, whatever a government says. Positive law is the rules governments actually enact and enforce. The Declaration argues from natural law. Courts today apply positive law, such as the 14th Amendment, which later wrote part of that argument into enforceable text."),
+  MC("rider.m",{prompt:"Which of these is the closest legal descendant of “all men are created equal” in today’s law?",opts:[
+   opt("The Equal Protection Clause of the 14th Amendment, used in cases like Brown v. Board of Education (1954).",1,"The Equal Protection Clause turns the ideal of equality into a rule that governments must treat people equally under law."),
+   opt("The Tenth Amendment’s reservation of powers to the states.",0,"The Tenth Amendment divides power between state and federal governments. It says nothing about equal treatment of people."),
+   opt("The 22nd Amendment’s two-term limit for presidents.",0,"It limits one office-holder’s time in power. It does not guarantee that people are treated equally.")],card:"echo_equal"}),
+  HB("rider.h",HL_EQ),
+  N("The rider tells you Thomas Jefferson is working on the draft in rooms at the Graff House, on the east side of town.")];}},
+ {id:"jeff1",npc:"jefferson",ch:3,after:function(){S.ch=4;},beats:function(){return[
+  N("Thomas Jefferson, tall and sunburned, is working in rented rooms at the Graff House. He is in his early thirties, and he has been given the hardest writing job in the colonies."),
+  Q("jeffA"),
+  MC("jeff1.m1",{prompt:"According to Jefferson’s own 1825 letter, was the Declaration trying to invent new political ideas?",opts:[
+   opt("Yes. It was meant to present principles no one had thought of before.",0,"Jefferson says the opposite. The aim was not to find out new principles."),
+   opt("No. It aimed to put “the common sense of the subject” before the world in plain terms.",1,"That is Jefferson’s stated intent. He also said it was not copied from any particular earlier writing."),
+   opt("No. He said it was copied word for word from John Locke.",0,"In the same letter he says it was not copied from any particular earlier writing, though he names Locke among the writers whose ideas it echoes.")]}),
+  Q("jeffB"),
+  Q("locke"),
+  L("Alienable and unalienable","To alienate is a legal term for transferring ownership: you can sell or give away what is alienable. Calling rights “unalienable” claims that no contract, law, or government can transfer them. Compare modern due process, which says even a legitimate government must follow fair procedures before it takes life, liberty, or property."),
+  MC("jeff1.m2",{prompt:"Which modern legal protection most directly reflects “Life, Liberty” by limiting what government can take from a person?",opts:[
+   opt("Due process of law (5th and 14th Amendments).",1,"The 5th and 14th Amendments bar government from depriving anyone of life, liberty, or property without due process, meaning fair procedures and an impartial decision-maker."),
+   opt("The Commerce Clause.",0,"The Commerce Clause concerns Congress’s power over trade among the states. It is not a guarantee of individual rights."),
+   opt("The Electoral College.",0,"That is a method of choosing the President. It does not protect a person from losing liberty.")],card:"echo_due"}),
+  MC("jeff1.m3",{prompt:"In 1967 the Supreme Court tied one right to “the orderly pursuit of happiness by free men.” What was that case about?",opts:[
+   opt("Loving v. Virginia, which struck down laws banning interracial marriage.",1,"In Loving v. Virginia the Court called the freedom to marry one of the vital personal rights essential to the orderly pursuit of happiness. It is a modern use of the Declaration’s own phrase."),
+   opt("A case about prayer in public schools.",0,"School prayer cases turn on the First Amendment’s religion clauses, not this language."),
+   opt("A case lowering the voting age to 18.",0,"The voting age was lowered by the 26th Amendment in 1971, not by this case.")],card:"echo_loving"}),
+  HB("jeff1.h",HL_RIGHTS),
+  N("Jefferson’s mind is already on the next part: the argument for the right to change a government. Roger Sherman of Connecticut has been marking up a copy of that section near the State House.")];}},
+ {id:"sherman",npc:"sherman",ch:4,after:function(){S.ch=5;},beats:function(){return[
+  N("Roger Sherman of Connecticut, the committee’s plainest and most careful lawyer-minded member, is reading the draft’s argument about government. (Sherman is the only person who signed all four of the nation’s major founding documents: the 1774 Association, the Declaration, the Articles of Confederation, and the Constitution.)"),
+  Q("mason2"),
+  Q("prudence"),
+  L("Popular sovereignty and the burden of proof","Popular sovereignty means legitimate power comes from the people. Because the Declaration claims a right to revolt only after a “long train of abuses,” it has to prove those abuses. That is why it lists facts, the way a complaint lists allegations."),
+  MC("sherman.m1",{prompt:"Which of these best protects “the consent of the governed” in the United States today?",opts:[
+   opt("Free, regular elections protected by the 15th, 19th, 24th, and 26th Amendments and the Voting Rights Act.",1,"Elections are how the governed give or withhold consent, and those amendments and laws widened and protect who gets to take part."),
+   opt("Lifetime tenure for federal judges.",0,"Life tenure protects judges’ independence. It is meant to insulate them from voters, not to express voter consent."),
+   opt("The President’s power to pardon.",0,"Pardons are an executive power over punishment. They are not a way for the governed to consent.")],card:"echo_vote"}),
+  MC("sherman.m2",{prompt:"The Declaration says the people may “alter” their government. Which lawful tool lets them do that without a revolution?",opts:[
+   opt("Article V of the Constitution, the process for amending it.",1,"Article V lets supermajorities of Congress and the states change the Constitution itself, a peaceful and lawful way to alter government."),
+   opt("The presidential veto.",0,"The veto blocks a bill. It does not change the structure of government."),
+   opt("The grand jury.",0,"A grand jury decides whether to bring criminal charges. It does not change government.")],card:"echo_art5"}),
+  HB("sherman.h",HL_CONSENT),
+  NT("note1",{title:"Chambers: analyze the Preamble",min:30,pts:50,prompt:"Write your analysis of the Preamble in your own words, 4 to 6 sentences. What core values, principles, or ethics does it present? How does it justify the need for independence? Use at least two cards from your satchel as evidence.",store:function(t){S.note1=t;}}),
+  N("The Preamble is done. Next come the charges, the facts the committee will submit “to a candid world.” Scrolls bearing them wait at the tops of platforming trials across the yard to the south, each marked by a golden beam of light. Jump, climb, and read at least three. Press Esc and open Play if you’d like platforming assist.")];}},
+ {id:"franklin",npc:"franklin",ch:6,after:function(){S.ch=7;},beats:function(){return[
+  N("Benjamin Franklin sits under the big tree with a book he is not reading. He is seventy, he has the gout, and he has already seen the draft go before Congress for editing. Jefferson’s rough draft, in fact, survives with Franklin’s handwriting on it. (The change to “self-evident” is generally credited to him.)"),
+  Q("franklin"),
+  MC("franklin.m",{prompt:"Congress cuts about a quarter of the draft, including a clause that Jefferson cared about. What does this show about how the Declaration was written?",opts:[
+   opt("It was a group product shaped by political compromise, so the final text doesn’t capture every author’s views.",1,"Drafts that must be approved by a public body get edited by it. That is why historians read drafts and deletions alongside the final text."),
+   opt("It was written by Jefferson alone, so every word is his intent.",0,"Jefferson wrote the first draft, but Congress and the committee changed it, so the final text reflects many hands."),
+   opt("It proves the Declaration has no legal meaning.",0,"Edits to a text don’t erase its meaning. They help explain it.")],card:"insight_compromise"}),
+  N("Jefferson is waiting at the Graff House to show you the longest cut.")];}},
+ {id:"jeff2",npc:"jefferson",ch:7,after:function(){S.ch=8;},beats:function(){return[
+  N("Jefferson has his rough draft on the table and the sting of the edits on his face. He points to a long passage that no longer appears."),
+  Q("draftClause"),
+  Q("jeffAuto"),
+  Q("jeffNotes"),
+  L("Legislative history","Lawyers read drafts and deletions to learn what a text means and what its authors fought over. A cut clause is evidence too. Notice that the draft blames the King, while the same clause admits colonists and merchants took part in the trade."),
+  MC("jeff2.m",{prompt:"Which part of the Constitution finally abolished slavery nationwide?",opts:[
+   opt("The 13th Amendment (1865).",1,"The 13th Amendment banned slavery and involuntary servitude, with an exception for punishment of crime that is still argued over."),
+   opt("Article I, Section 9’s clause about 1808.",0,"That clause did the reverse. It kept Congress from banning the importation of enslaved people until 1808."),
+   opt("The Third Amendment.",0,"The Third Amendment is about quartering soldiers in homes.")],card:"echo_13"}),
+  N("Jefferson notes that critics in England were already making the same point. A pamphlet seller on the plaza has one of them.")];}},
+ {id:"seller",npc:"seller",ch:8,after:function(){S.ch=9;},beats:function(){return[
+  N("A pamphlet seller has spread his wares under a striped awning. One tract is a British attack on the American cause, and next to it sits the version of the charge that Congress kept."),
+  Q("johnson"),
+  MC("seller.m",{prompt:"What was Samuel Johnson’s criticism of the American cause?",opts:[
+   opt("That colonists demanded liberty for themselves while holding enslaved people, which looked hypocritical.",1,"Johnson was a Tory critic, but his point landed, and the same contradiction was raised by Americans too."),
+   opt("That the colonists should not have formed their own legislatures.",0,"Johnson’s jab was about slavery and liberty, not about legislatures."),
+   opt("That the Declaration was too long.",0,"Johnson’s pamphlet appeared in 1775, before the Declaration existed.")]}),
+  HB("seller.h",HL_STRUCK),
+  N("The vote is done. Adams is back at the tavern, pleased with himself and writing home.")];}},
+ {id:"adams2",npc:"adams",ch:9,after:function(){S.ch=10;},beats:function(){return[
+  N("On July 2, twelve colonies voted for independence, with New York abstaining. Congress finished editing the text and approved it on July 4. Most delegates signed on August 2. The day after the vote, Adams wrote to his wife."),
+  Q("adams3"),
+  Q("pledge"),
+  L("What kind of document is this?","The Declaration is not a statute and not a constitution. It announces a decision and gives reasons for it. Courts don’t enforce its words directly. But later Americans cited its principles in state constitutions and in the debates over the 13th and 14th Amendments."),
+  MC("adams2.m1",{prompt:"A classmate says, “The Declaration is a law, so a court can strike down a statute for violating it.” What is the best response?",opts:[
+   opt("It announced independence and explained the reasons, but it isn’t a statute or constitution. Its ideas shaped later law, such as the 14th Amendment.",1,"Courts apply the Constitution, statutes, and precedent. The Declaration is a founding statement of principles that others turned into enforceable law."),
+   opt("It is the supreme law and overrides the Constitution.",0,"The Constitution is the supreme law of the land (Article VI). The Declaration has no such status."),
+   opt("It has had no influence on American law at all.",0,"Too strong. Its language and ideas show up in state constitutions, legal arguments, and later amendments.")],card:"insight_notlaw"}),
+  MC("adams2.m2",{prompt:"Adams expected July 2 to be the great holiday. Why do Americans celebrate July 4 instead?",opts:[
+   opt("July 2 was the vote for independence, but July 4 is the date Congress approved the final text of the Declaration.",1,"The Declaration carries the July 4 date because that is when Congress adopted its wording. Most delegates signed later, on August 2."),
+   opt("July 4 is the day the war began.",0,"Fighting began in April 1775 at Lexington and Concord."),
+   opt("All the delegates signed on July 4 in one room.",0,"Adoption was July 4, but most signatures were added on August 2 and some later.")]}),
+  N("As you leave, a pale light rises over the garden gate in the south-west corner of the yard. It was never there before. The Hall of Echoes is open.")];}},
+ {id:"courier",npc:"courier",ch:2,side:1,beats:function(){return[
+  N("A post boy from Braintree, Massachusetts, is sorting letters for the delegates. He has one from Abigail Adams to her husband, and he has a reply that John wrote a few weeks later."),
+  Q("abigail"),
+  Q("johnReply"),
+  MC("courier.m",{prompt:"What does this exchange show about the Revolution’s ideals?",opts:[
+   opt("A contemporary asked for women to be included in the new laws, and a delegate brushed it off. The gap between the ideals and the practice was noticed at the time.",1,"Abigail’s request and John’s reply show that the contradiction was visible in 1776, not just in hindsight."),
+   opt("Abigail opposed independence.",0,"She supported independence. Her request was about the rights of women under the new laws."),
+   opt("John agreed, and the Declaration included women.",0,"John laughed it off, and the Declaration speaks of “men.”")],card:"led_ladies"})];}}
+];
+/* echoes */
+var GHOSTS=[
+ {id:"seneca",name:"Echo of Seneca Falls",src:"seneca",card:"echo_seneca",at:[6,27],look:"seneca",
+  q:{prompt:"In 1848 the Seneca Falls convention rewrote the Declaration’s opening line. What was the point?",opts:[
+   opt("To claim that the Declaration’s promise of equality applied to women, including the right to vote.",1,"By copying the Declaration’s form and adding “and women,” the organizers argued that the nation’s own founding principle already required equality. The 19th Amendment came in 1920."),
+   opt("To argue for independence from the United States.",0,"Their aim was legal equality inside the nation, not secession."),
+   opt("To replace the list of grievances against George III.",0,"They kept the form and wrote a new list of grievances about how women were treated under the law.")]}},
+ {id:"douglass",name:"Echo of Frederick Douglass",src:"douglass",card:"echo_douglass",at:[12,27],look:"douglass",
+  q:{prompt:"Why did Frederick Douglass say in 1852 that the Fourth of July was “yours, not mine”?",opts:[
+   opt("Because the promise of liberty was being denied to millions of enslaved people, which made the celebration a bitter contradiction.",1,"Douglass called the signers brave and great men in the same speech. His target was the gap between their principles and slavery, the same gap you logged in your ledger."),
+   opt("Because he thought the Declaration’s principles were wrong and should be abandoned.",0,"He used the principles as his standard. His charge was hypocrisy, not that the ideals were mistaken."),
+   opt("Because he opposed all public celebrations.",0,"His objection was about this holiday’s meaning while slavery continued.")]}},
+ {id:"lincoln",name:"Echo of Abraham Lincoln",src:"lincoln",card:"echo_lincoln",at:[6,32],look:"lincoln",
+  q:{prompt:"At Gettysburg Lincoln said the nation was “dedicated to the proposition that all men are created equal.” How did that frame the Civil War?",opts:[
+   opt("It treated the Declaration as the nation’s founding purpose, so the war became a test of whether that promise could survive.",1,"Lincoln dated the nation to 1776 and read its purpose from the Declaration, which gave the Union cause a principle to stand on."),
+   opt("It argued the Declaration stopped mattering once the Constitution was written.",0,"He did the opposite and placed the Declaration at the center of the nation’s identity."),
+   opt("It claimed the Declaration made slavery legal.",0,"The Declaration does not address slavery’s legality, and Lincoln was using it to argue against slavery’s spread.")]}},
+ {id:"king",name:"Echo of Martin Luther King Jr.",src:"mlk",card:"echo_mlk",at:[12,32],look:"king",
+  q:{prompt:"Dr. King called the Declaration’s promise “a promissory note.” What was he arguing?",opts:[
+   opt("That the nation had made a promise of equal rights it had not yet paid in full, and citizens could demand it.",1,"The metaphor makes the promise a debt owed to every American. The argument was moral and political, and it helped drive the Civil Rights Act of 1964 and the Voting Rights Act of 1965."),
+   opt("That the Declaration is a contract courts can enforce like any other.",0,"It was a metaphor. As you learned from Adams, courts don’t enforce the Declaration as law."),
+   opt("That the promise had already been fully kept by 1963.",0,"His point was that it had not been kept.")]}}
+];
+GHOSTS.forEach(function(g){ENC.push({id:"gh_"+g.id,npc:g.id,ch:10,beats:function(){return[
+  N("A figure made of pale light turns toward you, someone who used the Declaration’s own words in a later century."),
+  Q(g.src),
+  MC("gh_"+g.id+".m",{prompt:g.q.prompt,opts:g.q.opts,card:g.card})];},
+  after:function(){if(GHOSTS.every(function(x){return S.enc["gh_"+x.id];}))S.ch=11;}});});
+
+var IDLE={
+ lee:"Richard Henry Lee watches the crowd on the steps, the resolution folded inside his coat.",
+ hancock:"John Hancock, president of the Congress, stands near the door in a rich maroon coat. He signed the Declaration first and largest, but you will find no quote from him in this game.",
+ adams:"John Adams paces by the tavern door, already thinking about the next argument.",
+ courier:"The post boy sorts letters into canvas bags. The next one is for a delegate in Philadelphia.",
+ jefferson:"Jefferson is bent over his portable writing desk, which he designed himself.",
+ rider:"The rider’s horse is steaming. He is already looking toward the next colony.",
+ sherman:"Roger Sherman reads the draft slowly, the way he reads everything.",
+ livingston:"Robert R. Livingston of New York is on the Committee of Five, but New York’s delegates have no instructions to vote for independence yet. (He was called home before the signing and never signed.)",
+ seller:"The pamphlet seller hums while he rearranges his stock.",
+ franklin:"Franklin closes his eyes against the afternoon light.",
+ seneca:"The echo of Seneca Falls waits, quiet and bright.",douglass:"The echo of Frederick Douglass stands very still.",lincoln:"The echo of Abraham Lincoln looks out at something far away.",king:"The echo of Martin Luther King Jr. stands with his head slightly bowed."
+};
+
+/* ============ STATE ============ */
+var KEY="committee_of_five_voxel_v1";
+function fresh(){return{name:"",started:false,ch:0,x:40.5,y:4,z:21.5,yaw:0,face:0,pts:0,cards:{},b:{},enc:{},g:{},note1:"",refl:"",done:false,coins:{},falls:0,assist:false};}
+function load(){try{var r=localStorage.getItem(KEY);if(r)return Object.assign(fresh(),JSON.parse(r));}catch(e){}return fresh();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+var S=load();
+
+/* ============ 3D VOXEL ENGINE ============ */
+var THREE=window.THREE;
+var WX=80,WY=40,WZ=80,GY=4;
+var vox=new Uint8Array(WX*WY*WZ);
+function setV(x,y,z,t){if(x>=0&&y>=0&&z>=0&&x<WX&&y<WY&&z<WZ)vox[(y*WZ+z)*WX+x]=t;}
+function getV(x,y,z){if(x<0||y<0||z<0||x>=WX||y>=WY||z>=WZ)return 0;return vox[(y*WZ+z)*WX+x];}
+function solidAt(x,y,z){if(x<0||z<0||x>=WX||z>=WZ)return true;if(y<0||y>=WY)return false;return vox[(y*WZ+z)*WX+x]!==0;}
+function fill(x0,y0,z0,x1,y1,z1,t){for(var y=y0;y<=y1;y++)for(var z=z0;z<=z1;z++)for(var x=x0;x<=x1;x++)setV(x,y,z,t);}
+function hollow(x0,y0,z0,x1,y1,z1,t){fill(x0,y0,z0,x1,y1,z1,t);fill(x0+1,y0,z0+1,x1-1,y1-1,z1-1,0);}
+var B={GRASS:1,DIRT:2,STONE:3,COBBLE:4,BRICK:5,PLANKS:6,LOG:7,LEAVES:8,QUARTZ:9,GLASS:10,GLOW:11,GOLD:12,SLATE:13,SBRICK:14,SLIME:15,GRAVEL:16,WOOLR:17,WOOLW:18,BARRIER:19,PAVING:20};
+var TILE_NAMES=["grassTop","grassSide","dirt","stone","cobble","brick","planks","logSide","logTop","leaves","quartz","glass","glow","gold","slate","sbrick","slime","gravel","woolR","woolW","barrier","paving"];
+var BT={};
+BT[B.GRASS]=["grassTop","grassSide","dirt"];BT[B.DIRT]=["dirt","dirt","dirt"];BT[B.STONE]=["stone","stone","stone"];BT[B.COBBLE]=["cobble","cobble","cobble"];
+BT[B.BRICK]=["brick","brick","brick"];BT[B.PLANKS]=["planks","planks","planks"];BT[B.LOG]=["logTop","logSide","logTop"];BT[B.LEAVES]=["leaves","leaves","leaves"];
+BT[B.QUARTZ]=["quartz","quartz","quartz"];BT[B.GLASS]=["glass","glass","glass"];BT[B.GLOW]=["glow","glow","glow"];BT[B.GOLD]=["gold","gold","gold"];
+BT[B.SLATE]=["slate","slate","slate"];BT[B.SBRICK]=["sbrick","sbrick","sbrick"];BT[B.SLIME]=["slime","slime","slime"];BT[B.GRAVEL]=["gravel","gravel","gravel"];
+BT[B.WOOLR]=["woolR","woolR","woolR"];BT[B.WOOLW]=["woolW","woolW","woolW"];BT[B.BARRIER]=["barrier","barrier","barrier"];BT[B.PAVING]=["paving","paving","paving"];
+function tIdx(n){return TILE_NAMES.indexOf(n);}
+
+/* ----- procedural block textures (16x16 each) ----- */
+var ATLAS_COLS=8,ATLAS_ROWS=4;
+function paintTile(c,idx,name){
+  var cx=(idx%ATLAS_COLS)*16,cy=Math.floor(idx/ATLAS_COLS)*16,r=mulberry(idx*97+13);
+  function P(x,y,col){c.fillStyle=col;c.fillRect(cx+x,cy+y,1,1);}
+  function RR(x,y,w,h,col){c.fillStyle=col;c.fillRect(cx+x,cy+y,w,h);}
+  function noise(base,amt){for(var y=0;y<16;y++)for(var x=0;x<16;x++)P(x,y,shade(base,(r()-.5)*amt));}
+  var x,y,i;
+  if(name==="grassTop"){noise("#5fa843",.3);for(i=0;i<10;i++)P((r()*16)|0,(r()*16)|0,"#7cc95a");}
+  else if(name==="grassSide"){noise("#8a5a36",.32);for(x=0;x<16;x++){var d=3+((r()*3)|0);for(y=0;y<d;y++)P(x,y,shade("#5fa843",(r()-.5)*.3));}}
+  else if(name==="dirt"){noise("#8a5a36",.32);for(i=0;i<8;i++)P((r()*16)|0,(r()*16)|0,"#5f3d22");}
+  else if(name==="stone"){noise("#8b8d92",.2);for(i=0;i<10;i++)P((r()*16)|0,(r()*16)|0,"#6c6e74");}
+  else if(name==="cobble"){noise("#7d7f85",.16);for(y=0;y<16;y+=5)RR(0,y,16,1,"#4d4f55");for(var row=0;row<4;row++){var off=(row*3)%5;for(x=off;x<16;x+=5)RR(x,row*5,1,5,"#4d4f55");}}
+  else if(name==="brick"){noise("#a64c38",.2);for(y=3;y<16;y+=4)RR(0,y,16,1,"#b1a89a");for(var rw=0;rw<4;rw++){var jx=(rw%2)?3:7;RR(jx,rw*4,1,3,"#b1a89a");RR(jx+8,rw*4,1,3,"#b1a89a");}}
+  else if(name==="paving"){RR(0,0,16,16,"#8a6a5a");for(var rw2=0;rw2<4;rw2++)for(var bx=0;bx<2;bx++){var bc=["#b4593f","#a64e38","#bd664b","#ad5640"][(r()*4)|0],ox=(rw2%2)*4;RR((bx*8+ox)%16,rw2*4,7,3,bc);}RR(0,3,16,1,"#8a6a5a");RR(0,7,16,1,"#8a6a5a");RR(0,11,16,1,"#8a6a5a");RR(0,15,16,1,"#8a6a5a");}
+  else if(name==="planks"){noise("#a07a4a",.12);for(y=3;y<16;y+=4)RR(0,y,16,1,"#6e5232");for(i=0;i<14;i++)P((r()*16)|0,(r()*16)|0,"#8a6840");RR(5,0,1,3,"#6e5232");RR(11,4,1,3,"#6e5232");RR(3,8,1,3,"#6e5232");RR(9,12,1,3,"#6e5232");}
+  else if(name==="logSide"){for(x=0;x<16;x++){var sc=shade("#5b4326",((x*37)%7-3)*.05);for(y=0;y<16;y++)P(x,y,shade(sc,(r()-.5)*.14));}}
+  else if(name==="logTop"){noise("#b08a56",.1);for(x=2;x<14;x++)for(y=2;y<14;y++){var dd=Math.max(Math.abs(x-7.5),Math.abs(y-7.5));if(Math.floor(dd)%3===2)P(x,y,"#8a6a3e");}RR(0,0,16,1,"#5b4326");RR(0,15,16,1,"#5b4326");RR(0,0,1,16,"#5b4326");RR(15,0,1,16,"#5b4326");}
+  else if(name==="leaves"){noise("#2f7a2a",.5);for(i=0;i<20;i++)P((r()*16)|0,(r()*16)|0,"#4b9a3a");}
+  else if(name==="quartz"){noise("#ece8e0",.06);RR(0,15,16,1,"#d4cfc4");RR(15,0,1,16,"#e0dbd0");}
+  else if(name==="glass"){RR(0,0,16,16,"#bfe4f2");RR(0,0,16,1,"#eef9fd");RR(0,0,1,16,"#eef9fd");RR(15,0,1,16,"#8fbfd2");RR(0,15,16,1,"#8fbfd2");RR(7,0,2,16,"#8fbfd2");RR(0,7,16,2,"#8fbfd2");for(i=0;i<5;i++)P(2+i,2+i,"#ffffff");}
+  else if(name==="glow"){RR(0,0,16,16,"#f6d36a");for(y=0;y<16;y+=4)for(x=0;x<16;x+=4)if(((x+y)/4)%2===0)RR(x,y,4,4,"#e2a93a");RR(0,0,16,1,"#fff0a8");RR(0,15,16,1,"#b8801f");}
+  else if(name==="gold"){noise("#f2cf4a",.1);RR(0,0,16,1,"#fff2a0");RR(0,0,1,16,"#fff2a0");RR(15,0,1,16,"#c9a02a");RR(0,15,16,1,"#c9a02a");RR(3,3,10,10,"#f7da66");}
+  else if(name==="slate"){noise("#4f5b78",.1);for(y=0;y<16;y+=4){RR(0,y,16,1,"#6a7898");RR(0,y+3,16,1,"#39435c");}for(var sj=0;sj<4;sj++){RR((sj*5+(sj%2)*3)%16,sj*4+1,1,3,"#39435c");}}
+  else if(name==="sbrick"){noise("#868991",.12);for(y=3;y<16;y+=4)RR(0,y,16,1,"#5d6068");for(var rw3=0;rw3<4;rw3++){var j2=(rw3%2)?3:11;RR(j2,rw3*4,1,3,"#5d6068");}}
+  else if(name==="slime"){RR(0,0,16,16,"#4aa83c");for(x=2;x<14;x++)for(y=2;y<14;y++)P(x,y,shade("#84d96a",(r()-.5)*.15));RR(0,0,16,1,"#2f7a2a");RR(0,15,16,1,"#2f7a2a");RR(0,0,1,16,"#2f7a2a");RR(15,0,1,16,"#2f7a2a");RR(4,4,3,2,"#c8f5b8");}
+  else if(name==="gravel"){noise("#8e8a84",.2);for(i=0;i<22;i++)P((r()*16)|0,(r()*16)|0,r()<.5?"#6c6862":"#b6b2aa");}
+  else if(name==="woolR"){noise("#b3312e",.1);}
+  else if(name==="woolW"){noise("#eeeeee",.07);}
+  else if(name==="barrier"){RR(0,0,16,16,"#24143a");for(i=0;i<16;i++){P(i,i,"#8a3fc4");P((i+8)%16,i,"#5a2a8a");}RR(0,0,16,1,"#b06ae8");}
+}
+function buildAtlas(){
+  var cv=document.createElement("canvas");cv.width=ATLAS_COLS*16;cv.height=ATLAS_ROWS*16;var c=cv.getContext("2d");
+  TILE_NAMES.forEach(function(n,i){paintTile(c,i,n);});
+  var t=new THREE.CanvasTexture(cv);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;
+}
+
+/* ----- world generation ----- */
+var COURSES=[
+ {g:"g_assent",mat:B.PLANKS,plats:[[22,34,4,2,2],[25,34,5,2,2],[28,34,6,2,2],[31,35,7,2,2],[34,35,8,2,2]],fin:[37,34,9,4,4]},
+ {g:"g_judges",mat:B.SBRICK,plats:[[44,28,4,3,3],[48,28,5,2,2],[51,28,6,2,2]],fin:[62,28,6,4,4],mp:{y:6,w:3,d:3,x0:54,x1:59,z:28}},
+ {g:"g_armies",mat:B.PLANKS,plats:[[56,38,4,3,3],[60,38,5,2,2],[60,41,6,2,2],[60,44,7,2,2],[57,44,8,2,2],[54,44,9,2,2],[54,47,10,2,2]],fin:[54,50,11,4,4]},
+ {g:"g_quarter",mat:B.SBRICK,plats:[[40,62,4,2,2,1],[44,62,8,3,3],[48,62,8,2,2],[51,63,9,2,2]],fin:[54,62,9,4,4]},
+ {g:"g_tax",mat:B.PLANKS,plats:[[28,46,4,3,3],[31,48,5,2,2],[31,51,6,2,2],[29,54,7,2,2],[26,57,8,2,2]],fin:[26,60,9,4,4]},
+ {g:"g_jury",mat:B.SBRICK,plats:[[66,40,4,3,3],[70,40,5,2,2],[73,40,5,2,2],[73,43,6,2,2],[70,43,7,2,2],[67,43,8,2,2],[67,46,9,2,2]],fin:[66,49,10,4,4]},
+ {g:"g_beyond",mat:B.PLANKS,plats:[[10,60,4,3,3],[14,60,5,1,1],[17,60,6,1,1],[17,63,7,1,1],[14,63,8,1,1],[11,63,9,1,1]],fin:[8,64,10,4,4]}
+];
+var PED3=[],COINS=[],MPS=[];
+function tree(x,z,h,big){
+  var top=GY+h;fill(x,GY,z,x,top-1,z,B.LOG);var R=big?3:2,y,dx,dz;
+  for(y=top-2;y<=top;y++)for(dz=-R;dz<=R;dz++)for(dx=-R;dx<=R;dx++){if(Math.abs(dx)===R&&Math.abs(dz)===R&&((x+z+y)%2===0))continue;if(!(dx===0&&dz===0&&y<top))setV(x+dx,y,z+dz,B.LEAVES);}
+  for(dz=-1;dz<=1;dz++)for(dx=-1;dx<=1;dx++)if(Math.abs(dx)+Math.abs(dz)<2)setV(x+dx,top+1,z+dz,B.LEAVES);
+  if(big)for(dz=-2;dz<=2;dz++)for(dx=-2;dx<=2;dx++)if(Math.abs(dx)+Math.abs(dz)<4)setV(x+dx,top+1,z+dz,B.LEAVES);
+}
+function nearPlat(x,z,m){
+  var hit=false;
+  COURSES.forEach(function(cs){cs.plats.concat([cs.fin]).forEach(function(p){if(x>=p[0]-m&&x<=p[0]+p[3]+m&&z>=p[1]-m&&z<=p[1]+p[4]+m)hit=true;});if(cs.mp&&x>=cs.mp.x0-m&&x<=cs.mp.x1+cs.mp.w+m&&z>=cs.mp.z-m&&z<=cs.mp.z+cs.mp.d+m)hit=true;});
+  return hit;
+}
+function genWorld(){
+  var x,z,y,i;
+  fill(0,0,0,WX-1,2,WZ-1,B.DIRT);fill(0,3,0,WX-1,3,WZ-1,B.GRASS);
+  fill(0,3,15,WX-1,3,19,B.PAVING);fill(0,3,20,WX-1,3,23,B.COBBLE);fill(0,3,24,WX-1,3,25,B.PAVING);
+  fill(35,3,26,38,3,WZ-4,B.GRAVEL);fill(23,3,46,34,3,48,B.GRAVEL);
+  fill(0,4,0,WX-1,6,2,B.LEAVES);fill(0,4,WZ-3,WX-1,6,WZ-1,B.LEAVES);fill(0,4,0,2,6,WZ-1,B.LEAVES);fill(WX-3,4,0,WX-1,6,WZ-1,B.LEAVES);
+  /* State House */
+  fill(27,4,3,52,4,12,B.SBRICK);fill(37,4,11,41,4,15,B.SBRICK);fill(37,4,16,41,4,16,B.SBRICK);
+  hollow(27,5,3,52,11,12,B.BRICK);fill(28,4,4,51,4,11,B.PLANKS);
+  for(i=0;i<5;i++)fill(27,12+i,3+i,52,12+i,12-i,B.SLATE);
+  [[29,30],[32,33],[44,45],[47,48]].forEach(function(p){fill(p[0],7,12,p[1],9,12,B.GLASS);});
+  [[30,31],[34,35],[43,44],[48,49]].forEach(function(p){fill(p[0],7,3,p[1],9,3,B.GLASS);});
+  [[5,6],[9,10]].forEach(function(p){fill(27,7,p[0],27,9,p[1],B.GLASS);fill(52,7,p[0],52,9,p[1],B.GLASS);});
+  fill(37,5,11,41,22,15,B.QUARTZ);fill(38,5,11,40,7,15,0);
+  fill(38,15,15,40,17,15,B.GOLD);setV(39,16,15,B.SLATE);
+  fill(37,23,11,41,23,15,B.GOLD);fill(38,24,12,40,26,14,B.QUARTZ);
+  setV(39,25,12,B.GLASS);setV(39,25,14,B.GLASS);setV(38,25,13,B.GLASS);setV(40,25,13,B.GLASS);
+  fill(38,27,12,40,27,14,B.SLATE);setV(39,28,13,B.SLATE);setV(39,29,13,B.GOLD);setV(39,30,13,B.GOLD);
+  fill(39,10,15,39,11,15,B.GLASS);fill(37,10,13,37,11,13,B.GLASS);fill(41,10,13,41,11,13,B.GLASS);
+  fill(30,13,6,31,19,7,B.BRICK);fill(48,13,6,49,19,7,B.BRICK);
+  [31,33,35].forEach(function(dx){fill(dx,5,6,dx+1,5,6,B.PLANKS);fill(dx+13,5,8,dx+14,5,8,B.PLANKS);fill(dx+13,5,6,dx+14,5,6,B.PLANKS);fill(dx,5,8,dx+1,5,8,B.PLANKS);});
+  fill(36,5,4,43,5,5,B.SBRICK);fill(38,6,4,41,6,4,B.PLANKS);setV(39,7,4,B.GOLD);setV(40,7,4,B.QUARTZ);
+  [[32,6],[32,10],[39,8],[47,6],[47,10]].forEach(function(p){setV(p[0],10,p[1],B.GLOW);});
+  /* Graff House and City Tavern */
+  function house(x0,x1,doorX,sign){
+    fill(x0,4,6,x1,4,14,B.SBRICK);hollow(x0,5,6,x1,10,14,B.BRICK);fill(x0+1,4,7,x1-1,4,13,B.PLANKS);
+    for(var k=0;k<5;k++)fill(x0,11+k,6+k,x1,11+k,14-k,B.SLATE);
+    fill(doorX,5,14,doorX+1,6,14,0);fill(doorX-1,7,14,doorX+2,7,14,B.PLANKS);fill(doorX,4,15,doorX+1,4,15,B.SBRICK);
+    [x0+2,x0+3,x1-3,x1-2].forEach(function(wx){if(Math.abs(wx-doorX)>1)fill(wx,6,14,wx,7,14,B.GLASS);});
+    [x0+2,x0+5,x1-5,x1-2].forEach(function(wx){setV(wx,9,14,B.GLASS);});
+    [x0+3,x1-3].forEach(function(wx){fill(wx,12,8,wx+1,18,9,B.BRICK);});
+    setV(x0+3,9,7,B.GLOW);setV(x1-3,9,7,B.GLOW);setV(Math.floor((x0+x1)/2),9,10,B.GLOW);
+    if(sign){fill(x0-1,5,15,x0-1,8,15,B.LOG);fill(x0-2,7,15,x0-1,8,15,B.PLANKS);setV(x0-2,7,15,B.GOLD);}
+  }
+  house(58,71,64,false);house(6,19,12,true);
+  /* lamps, benches, stall */
+  for(i=0;i<8;i++){var lx=5+i*10;[19,24].forEach(function(lz){fill(lx,4,lz,lx,6,lz,B.LOG);setV(lx,7,lz,B.GLOW);});}
+  fill(24,4,17,26,4,17,B.PLANKS);fill(54,4,17,56,4,17,B.PLANKS);
+  for(x=50;x<=54;x++){[24,25].forEach(function(sz){setV(x,8,sz,x%2?B.WOOLR:B.WOOLW);});}
+  [[50,24],[54,24],[50,25],[54,25]].forEach(function(p){fill(p[0],5,p[1],p[0],7,p[1],B.LOG);});
+  fill(51,4,25,53,4,25,B.PLANKS);
+  /* Hall of Echoes */
+  hollow(6,4,38,22,6,56,B.SBRICK);fill(7,3,39,21,3,55,B.QUARTZ);
+  for(x=6;x<=22;x+=2){setV(x,7,38,B.QUARTZ);setV(x,7,56,B.QUARTZ);}
+  for(z=38;z<=56;z+=2){setV(6,7,z,B.QUARTZ);setV(22,7,z,B.QUARTZ);}
+  [[8,40],[20,40],[8,54],[20,54]].forEach(function(p){fill(p[0],4,p[1],p[0],8,p[1],B.QUARTZ);setV(p[0],9,p[1],B.GOLD);});
+  fill(22,4,46,22,6,48,B.BARRIER);
+  fill(13,4,46,15,4,48,B.SBRICK);fill(14,5,47,14,10,47,B.QUARTZ);setV(14,11,47,B.GOLD);[[13,46],[15,46],[13,48],[15,48]].forEach(function(p){setV(p[0],5,p[1],B.GLOW);});
+  /* trees */
+  var rr=mulberry(31),placed=[];
+  for(i=0;i<900&&placed.length<36;i++){
+    var tx=4+((rr()*(WX-8))|0),tz=28+((rr()*(WZ-34))|0);
+    if(nearPlat(tx,tz,6))continue;if(tx>=4&&tx<=25&&tz>=36&&tz<=58)continue;if(tx>=32&&tx<=41)continue;if(tx>=46&&tx<=54&&tz>=36&&tz<=46)continue;if(tx>=44&&tx<=60&&tz>=60&&tz<=68)continue;
+    if(placed.some(function(p){return Math.abs(p[0]-tx)<5&&Math.abs(p[1]-tz)<5;}))continue;
+    placed.push([tx,tz]);tree(tx,tz,4+((rr()*2)|0),false);
+  }
+  tree(50,41,7,true);fill(46,4,43,48,4,43,B.PLANKS);
+  [[8,28],[72,28],[4,33],[76,36]].forEach(function(p){if(!nearPlat(p[0],p[1],4))tree(p[0],p[1],5,false);});
+  /* parkour courses */
+  COURSES.forEach(function(cs){
+    cs.plats.forEach(function(p){fill(p[0],p[2],p[1],p[0]+p[3]-1,p[2],p[1]+p[4]-1,p[5]?B.SLIME:cs.mat);
+      if(!p[5])COINS.push({x:p[0]+p[3]/2,y:p[2]+1.8,z:p[1]+p[4]/2,id:"c"+COINS.length});});
+    var f=cs.fin;fill(f[0],f[2],f[1],f[0]+f[3]-1,f[2],f[1]+f[4]-1,B.QUARTZ);
+    [[0,0],[f[3]-1,0],[0,f[4]-1],[f[3]-1,f[4]-1]].forEach(function(o){setV(f[0]+o[0],f[2],f[1]+o[1],B.GOLD);});
+    setV(f[0]+1,f[2]+1,f[1]+1,B.SBRICK);
+    PED3.push({g:cs.g,x:f[0]+1.5,z:f[1]+1.5,y:f[2]+2,fin:f});
+    if(cs.mp){MPS.push({x:cs.mp.x0+cs.mp.w/2,z:cs.mp.z+cs.mp.d/2,y:cs.mp.y+1,w:cs.mp.w,d:cs.mp.d,x0:cs.mp.x0+cs.mp.w/2,x1:cs.mp.x1+cs.mp.w/2,dx:0,dz:0,ph:0});}
+  });
+}
+var GATE_X=22;
+function gateOpen(){return S.ch>=10;}
+var gateIsOpen=false;
+function updateGate(){
+  var open=gateOpen();
+  if(open!==gateIsOpen){gateIsOpen=open;fill(22,4,46,22,6,48,open?0:B.BARRIER);if(worldMesh)buildMesh();}
+}
+
+/* ----- mesh builder with face culling and ambient occlusion ----- */
+var scene,camera,renderer,worldMesh,atlasTex,worldMat;
+function buildMesh(){
+  var pos=[],col=[],uvs=[],idx=[],n=0;
+  var SH=[.8,.8,1,.5,.9,.9];
+  var base=[0,0,0],nb=[0,0,0],pt=[0,0,0];
+  function occ(a,b,c){return solidAt(a,b,c)?1:0;}
+  for(var y=0;y<WY;y++)for(var z=0;z<WZ;z++)for(var x=0;x<WX;x++){
+    var t=vox[(y*WZ+z)*WX+x];if(!t)continue;var tiles=BT[t];
+    for(var d=0;d<6;d++){
+      var a=d>>1,s=(d&1)?-1:1;base[0]=x;base[1]=y;base[2]=z;
+      var cx=x,cy=y,cz=z;if(a===0)cx+=s;else if(a===1)cy+=s;else cz+=s;
+      if(cy<0)continue;if(cx>=0&&cx<WX&&cz>=0&&cz<WZ&&cy<WY&&vox[(cy*WZ+cz)*WX+cx])continue;
+      var b=(a+1)%3,c=(a+2)%3;
+      var tile=a===1?(s>0?tiles[0]:tiles[2]):tiles[1],ti=tIdx(tile);
+      var col0=ti%ATLAS_COLS,row0=Math.floor(ti/ATLAS_COLS);
+      var order=s>0?[[0,0],[1,0],[1,1],[0,1]]:[[0,1],[1,1],[1,0],[0,0]];
+      var aos=[],vstart=n;
+      for(var q=0;q<4;q++){
+        var ub=order[q][0],vb=order[q][1];
+        pt[0]=base[0];pt[1]=base[1];pt[2]=base[2];pt[a]+=(s>0?1:0);pt[b]+=ub;pt[c]+=vb;
+        nb[0]=base[0];nb[1]=base[1];nb[2]=base[2];nb[a]+=s;
+        var sb=ub?1:-1,sc=vb?1:-1;
+        var p1=[nb[0],nb[1],nb[2]],p2=[nb[0],nb[1],nb[2]],p3=[nb[0],nb[1],nb[2]];
+        p1[b]+=sb;p2[c]+=sc;p3[b]+=sb;p3[c]+=sc;
+        var o1=occ(p1[0],p1[1],p1[2]),o2=occ(p2[0],p2[1],p2[2]),o3=occ(p3[0],p3[1],p3[2]);
+        var ao=(o1&&o2)?0:3-(o1+o2+o3);aos.push(ao);
+        var br=[.55,.72,.86,1][ao]*SH[d];
+        pos.push(pt[0],pt[1],pt[2]);col.push(br,br,br);
+        var uf,vf;if(a===0){uf=vb;vf=ub;}else if(a===1){uf=vb;vf=ub;}else{uf=ub;vf=vb;}
+        uvs.push((col0+.02+.96*uf)/ATLAS_COLS,1-(row0+1-(.02+.96*vf))/ATLAS_ROWS);
+        n++;
+      }
+      if(aos[0]+aos[2]<aos[1]+aos[3])idx.push(vstart+1,vstart+2,vstart+3,vstart+1,vstart+3,vstart);
+      else idx.push(vstart,vstart+1,vstart+2,vstart,vstart+2,vstart+3);
+    }
+  }
+  var g=new THREE.BufferGeometry();
+  g.setAttribute("position",new THREE.BufferAttribute(new Float32Array(pos),3));
+  g.setAttribute("color",new THREE.BufferAttribute(new Float32Array(col),3));
+  g.setAttribute("uv",new THREE.BufferAttribute(new Float32Array(uvs),2));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(idx),1));
+  g.computeVertexNormals();
+  if(worldMesh){scene.remove(worldMesh);worldMesh.geometry.dispose();}
+  worldMesh=new THREE.Mesh(g,worldMat);worldMesh.castShadow=true;worldMesh.receiveShadow=true;scene.add(worldMesh);
+}
+
+/* ----- blocky figures ----- */
+var FS=1.8/32;
+function tex(w,h,draw){var c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"));var t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;}
+function makeFigure(o){
+  var G=new THREE.Group(),inner=new THREE.Group();G.add(inner);
+  var skin=o.skin||"#f1c9a0",skinD=shade(skin,-.18),coat=o.coat||"#555",vest=o.vest||"#e8dcc0",hair=o.hair||"#5a3a22",pants=o.pants||"#d9d1be",hose=o.hose||"#eee8da";
+  var hs=o.hairStyle||"short";
+  function M(map){var m=new THREE.MeshLambertMaterial({map:map});if(o.ghost){m.transparent=true;m.opacity=.74;m.emissive=new THREE.Color(0x4f86c9);m.depthWrite=false;}return m;}
+  function CM(color){var m=new THREE.MeshLambertMaterial({color:color});if(o.ghost){m.transparent=true;m.opacity=.74;m.emissive=new THREE.Color(0x4f86c9);m.depthWrite=false;}return m;}
+  function box(w,h,d,mat,x,y,z,parent){var m=new THREE.Mesh(new THREE.BoxGeometry(w*FS,h*FS,d*FS),mat);m.position.set(x*FS,y*FS,z*FS);m.castShadow=true;(parent||inner).add(m);return m;}
+  var face=tex(8,8,function(g){
+    g.fillStyle=skin;g.fillRect(0,0,8,8);g.fillStyle=skinD;g.fillRect(0,7,8,1);
+    if(hs!=="bald"){g.fillStyle=hair;g.fillRect(0,0,8,2);g.fillRect(0,2,1,2);g.fillRect(7,2,1,2);if(hs==="long"){g.fillRect(0,2,1,6);g.fillRect(7,2,1,6);}}
+    else{g.fillStyle=hair;g.fillRect(0,1,1,5);g.fillRect(7,1,1,5);}
+    g.fillStyle="#fff";g.fillRect(1,4,2,1);g.fillRect(5,4,2,1);g.fillStyle="#2a1a12";g.fillRect(2,4,1,1);g.fillRect(5,4,1,1);
+    g.fillStyle="#a85a4a";g.fillRect(3,6,2,1);
+    if(o.glasses){g.fillStyle="#cfe6f0";g.fillRect(1,3,3,1);g.fillRect(1,5,3,1);g.fillRect(4,3,3,1);g.fillRect(4,5,3,1);g.fillRect(1,3,1,3);g.fillRect(6,3,1,3);}
+    if(o.beard){g.fillStyle=o.beard;g.fillRect(1,6,1,2);g.fillRect(6,6,1,2);g.fillRect(2,7,4,1);}
+    if(o.mustache){g.fillStyle=o.mustache;g.fillRect(2,5,4,1);}
+  });
+  var sideT=tex(8,8,function(g){g.fillStyle=skin;g.fillRect(0,0,8,8);if(hs!=="bald"){g.fillStyle=hair;g.fillRect(0,0,8,2);g.fillRect(4,2,4,3);if(hs==="long")g.fillRect(3,2,5,6);}else{g.fillStyle=hair;g.fillRect(4,1,4,4);}});
+  var topT=tex(8,8,function(g){g.fillStyle=hs==="bald"?shade(skin,.08):hair;g.fillRect(0,0,8,8);});
+  var backT=tex(8,8,function(g){g.fillStyle=hair;g.fillRect(0,0,8,hs==="long"||hs==="powder"?8:6);g.fillStyle=skin;if(hs!=="long"&&hs!=="powder")g.fillRect(0,6,8,2);});
+  var botT=tex(8,8,function(g){g.fillStyle=skinD;g.fillRect(0,0,8,8);});
+  var headMats=[M(sideT),M(sideT),M(topT),M(botT),M(face),M(backT)];
+  var head=new THREE.Group();head.position.set(0,24*FS,0);inner.add(head);
+  box(8,8,8,headMats,0,4,0,head);
+  /* hats and hair pieces */
+  var hc=o.hatCol||"#17151a";
+  if(o.hat==="tricorn"){box(13,1,13,CM(hc),0,8.5,0,head);box(8.6,2.5,8.6,CM(shade(hc,.08)),0,10,0,head);box(13.2,.5,13.2,CM("#cbb46a"),0,9.05,0,head);box(4,2,2,CM(hc),0,9.2,6.5,head);}
+  else if(o.hat==="tophat"){box(12,1,12,CM(hc),0,8.5,0,head);box(7,10,7,CM(hc),0,13.5,0,head);box(7.2,1.5,7.2,CM("#4a4a58"),0,9.7,0,head);}
+  else if(o.hat==="cap"){box(9,3,9,CM(hc),0,9.5,0,head);box(9,1,3.5,CM(shade(hc,-.15)),0,8.7,5.2,head);}
+  else if(o.hat==="bonnet"){box(10,6,10,CM(hc),0,8,-.5,head);box(1.6,7,8,CM(hc),4.8,4.5,-.5,head);box(1.6,7,8,CM(hc),-4.8,4.5,-.5,head);box(2,2,1,CM("#d86a8a"),3,.2,4.4,head);box(2,2,1,CM("#d86a8a"),-3,.2,4.4,head);}
+  if(hs==="powder"){box(9,3,9,CM(hair),0,8.7,0,head);box(2,4,4,CM(hair),4.8,3.5,0,head);box(2,4,4,CM(hair),-4.8,3.5,0,head);box(9,7,2,CM(hair),0,3.8,-4.8,head);box(2.4,2.4,2,CM("#17151a"),0,-1.4,-5.2,head);}
+  if(hs==="long"||hs==="bald"){box(9,10,1.6,CM(hair),0,2,-4.8,head);box(1.6,8,6,CM(hair),4.8,2.5,-.5,head);box(1.6,8,6,CM(hair),-4.8,2.5,-.5,head);}
+  /* torso */
+  var torsoF=tex(8,12,function(g){g.fillStyle=coat;g.fillRect(0,0,8,12);g.fillStyle=shade(coat,-.22);g.fillRect(0,9,8,3);g.fillStyle=shade(coat,-.35);g.fillRect(4,9,1,3);
+    if(o.skirt){g.fillStyle=o.skirtCol||shade(coat,-.1);g.fillRect(0,7,8,5);}
+    g.fillStyle=vest;g.fillRect(2,0,4,9);g.fillStyle="#f4f1e8";g.fillRect(3,0,2,2);g.fillStyle="#d4b04a";g.fillRect(3,3,1,1);g.fillRect(3,5,1,1);g.fillRect(3,7,1,1);});
+  var torsoS=tex(8,12,function(g){g.fillStyle=coat;g.fillRect(0,0,8,12);g.fillStyle=shade(coat,-.22);g.fillRect(0,9,8,3);});
+  var torsoB=tex(8,12,function(g){g.fillStyle=coat;g.fillRect(0,0,8,12);g.fillStyle=shade(coat,-.2);g.fillRect(0,9,8,3);g.fillStyle=shade(coat,-.3);g.fillRect(4,0,1,12);});
+  box(8,12,4,[M(torsoS),M(torsoS),M(torsoS),M(torsoS),M(torsoF),M(torsoB)],0,18,0);
+  /* arms */
+  var armT=tex(4,12,function(g){g.fillStyle=coat;g.fillRect(0,0,4,12);g.fillStyle=shade(coat,-.18);g.fillRect(3,0,1,10);g.fillStyle="#f4f1e8";g.fillRect(0,9,4,1);g.fillStyle=skin;g.fillRect(0,10,4,2);});
+  var armTop=tex(4,4,function(g){g.fillStyle=coat;g.fillRect(0,0,4,4);}),armBot=tex(4,4,function(g){g.fillStyle=skin;g.fillRect(0,0,4,4);});
+  var armMats=[M(armT),M(armT),M(armTop),M(armBot),M(armT),M(armT)];
+  var armL=new THREE.Group(),armR=new THREE.Group();armL.position.set(6*FS,24*FS,0);armR.position.set(-6*FS,24*FS,0);inner.add(armL);inner.add(armR);
+  box(4,12,4,armMats,0,-6,0,armL);box(4,12,4,armMats,0,-6,0,armR);
+  if(o.prop==="scroll"||o.prop==="letter"){box(2,2,6,CM(o.prop==="letter"?"#f4eedd":"#efe3b8"),0,-11,4,armR);box(1,.6,1,CM("#b02a2a"),0,-9.9,4,armR);}
+  if(o.prop==="satchel"){box(5,6,3,CM("#7b5a38"),0,-10,3.5,armL);}
+  /* legs */
+  var legT=tex(4,12,function(g){g.fillStyle=pants;g.fillRect(0,0,4,3);g.fillStyle=hose;g.fillRect(0,3,4,7);g.fillStyle="#2b2118";g.fillRect(0,10,4,2);});
+  var legTop=tex(4,4,function(g){g.fillStyle=pants;g.fillRect(0,0,4,4);}),legBot=tex(4,4,function(g){g.fillStyle="#2b2118";g.fillRect(0,0,4,4);});
+  var legMats=[M(legT),M(legT),M(legTop),M(legBot),M(legT),M(legT)];
+  var legL=new THREE.Group(),legR=new THREE.Group();legL.position.set(2*FS,12*FS,0);legR.position.set(-2*FS,12*FS,0);inner.add(legL);inner.add(legR);
+  box(4,12,4,legMats,0,-6,0,legL);box(4,12,4,legMats,0,-6,0,legR);
+  if(o.skirt)box(10,9,6,CM(o.skirtCol||shade(coat,-.1)),0,10,0);
+  var sy=1+.06*(o.tall||0),sw=o.wide?1.14:1;inner.scale.set(sw,sy,sw);
+  G.userData={armL:armL,armR:armR,legL:legL,legR:legR,head:head,inner:inner,top:1.9*sy};
+  return G;
+}
+var LOOK={
+ player:{coat:"#2f6f8e",vest:"#eadfb8",hair:"#5a3a22",hat:"cap",hatCol:"#2a3f5a",prop:"satchel"},
+ lee:{coat:"#2f5d3f",vest:"#e8dcc0",hair:"#6b4a2f"},
+ hancock:{coat:"#8a2231",vest:"#d8c070",hair:"#e6e2d8",hairStyle:"powder",wide:1},
+ adams:{coat:"#5b4129",vest:"#c9b060",hair:"#bdb8ac",wide:1},
+ franklin:{coat:"#5a4630",vest:"#9aa7a2",hair:"#c8c4ba",hairStyle:"bald",glasses:1,wide:1},
+ jefferson:{coat:"#35507c",vest:"#e0d4aa",hair:"#a9542a",tall:3},
+ sherman:{coat:"#262c3a",vest:"#cfc7b0",hair:"#cfcac0",hat:"tricorn"},
+ livingston:{coat:"#5a4a80",vest:"#e8e0c8",hair:"#e6e2d8",hairStyle:"powder"},
+ rider:{coat:"#7a5a3a",vest:"#bba878",hair:"#4a3020",hat:"tricorn",hatCol:"#3a2a1c",prop:"satchel"},
+ seller:{coat:"#8e7f5e",vest:"#e8e2d2",hair:"#5a4030",hat:"cap",hatCol:"#d8d0b8"},
+ courier:{coat:"#6f7480",vest:"#d0ccc0",hair:"#7a5a30",hat:"cap",hatCol:"#4a4f5a",prop:"letter"},
+ seneca:{ghost:1,coat:"#7a5a9a",vest:"#e8dcf0",skirt:1,skirtCol:"#6a4c8a",hat:"bonnet",hatCol:"#cfc0e0",hair:"#4a3a30",skin:"#f0cfb0"},
+ douglass:{ghost:1,coat:"#24262e",vest:"#cfcbd6",skin:"#8a5a3a",hair:"#4a4448",hairStyle:"long",tall:2},
+ lincoln:{ghost:1,coat:"#1c1c24",vest:"#d8d8e0",skin:"#d8b08a",hair:"#1c1814",hat:"tophat",hatCol:"#14141a",beard:"#1c1814",tall:4},
+ king:{ghost:1,coat:"#2a2e3c",vest:"#e4e4ea",skin:"#7a4e34",hair:"#15110f",mustache:"#15110f"}
+};
+
+/* ----- entities ----- */
+var NPCS=[
+ {id:"lee",name:"Richard Henry Lee",x:34.5,z:18.5,look:"lee"},
+ {id:"hancock",name:"John Hancock",x:46.5,z:18.5,look:"hancock"},
+ {id:"adams",name:"John Adams",x:12.5,z:17.5,look:"adams"},
+ {id:"courier",name:"Post boy from Braintree",x:25.5,z:21.5,look:"courier"},
+ {id:"jefferson",name:"Thomas Jefferson",x:64.5,z:17.5,look:"jefferson"},
+ {id:"rider",name:"Virginia post rider",x:72.5,z:21.5,look:"rider"},
+ {id:"sherman",name:"Roger Sherman",x:31.5,z:18.5,look:"sherman"},
+ {id:"livingston",name:"Robert R. Livingston",x:50.5,z:18.5,look:"livingston"},
+ {id:"seller",name:"Pamphlet seller",x:52.5,z:26.5,look:"seller"},
+ {id:"franklin",name:"Benjamin Franklin",x:47.5,z:39.5,look:"franklin"}
+];
+var GHPOS={seneca:[10.5,42.5],douglass:[18.5,42.5],lincoln:[10.5,52.5],king:[18.5,52.5]};
+GHOSTS.forEach(function(g){NPCS.push({id:g.id,name:g.name,x:GHPOS[g.id][0],z:GHPOS[g.id][1],look:g.look,ghost:1});});
+var MON={x:14.5,z:47.5,y:GY+1};
+var player={x:S.x,y:S.y,z:S.z,vx:0,vz:0,vy:0,onGround:false,coyote:0,bounceCD:0,plat:null,face:S.face||0,walk:0,fig:null};
+var cam={yaw:S.yaw||0,pitch:.42,dist:7.5};
+var keys={},modal=false,titleOpen=true,jumpBuf=0,time=0,lastSafe={x:S.x,y:S.y,z:S.z},safeT=0,coinMeshes=[],pedMeshes=[],labels=[],marker=null,sunMesh=null,clouds=[],sun=null,hemi=null,skyBg=null,mpMeshes=[];
+function npcAvailable(n){return ENC.some(function(e){return e.npc===n.id&&!S.enc[e.id]&&(e.side?S.ch>=e.ch:S.ch===e.ch);});}
+
+/* ----- physics ----- */
+var HW=.3,HH=1.8;
+function collides(px,py,pz){
+  var x0=Math.floor(px-HW),x1=Math.floor(px+HW-1e-6),y0=Math.floor(py+1e-4),y1=Math.floor(py+HH-1e-6),z0=Math.floor(pz-HW),z1=Math.floor(pz+HW-1e-6);
+  for(var y=y0;y<=y1;y++)for(var z=z0;z<=z1;z++)for(var x=x0;x<=x1;x++)if(solidAt(x,y,z))return true;
+  return false;
+}
+function stepPhysics(dt){
+  /* moving platforms */
+  MPS.forEach(function(m){var nx=m.x0+(m.x1-m.x0)*(.5+.5*Math.sin(time*.55));m.dx=nx-m.x;m.dz=0;m.x=nx;});
+  if(player.plat){player.x+=player.plat.dx;player.z+=player.plat.dz;}
+  var f=(keys.f?1:0)-(keys.b?1:0),r=(keys.r?1:0)-(keys.l?1:0);
+  var fx=-Math.sin(cam.yaw),fz=-Math.cos(cam.yaw),rx=Math.cos(cam.yaw),rz=-Math.sin(cam.yaw);
+  var mx=fx*f+rx*r,mz=fz*f+rz*r,len=Math.hypot(mx,mz),sp=keys.run?7.2:5.4,tvx=0,tvz=0;
+  if(len>0){mx/=len;mz/=len;tvx=mx*sp;tvz=mz*sp;}
+  var k=Math.min(1,dt*(player.onGround?16:9));player.vx+=(tvx-player.vx)*k;player.vz+=(tvz-player.vz)*k;
+  if(len>0){var ft=Math.atan2(mx,mz),df=((ft-player.face+Math.PI*3)%(Math.PI*2))-Math.PI;player.face+=df*Math.min(1,dt*14);}
+  player.coyote=player.onGround?.12:player.coyote-dt;player.bounceCD-=dt;jumpBuf-=dt;
+  if(jumpBuf>0&&(player.onGround||player.coyote>0)){player.vy=8.6;player.onGround=false;player.coyote=0;jumpBuf=0;player.plat=null;}
+  player.vy=Math.max(-32,player.vy-28*dt);
+  /* horizontal with step-up assist */
+  var dx=player.vx*dt,dz=player.vz*dt;
+  player.x+=dx;
+  if(collides(player.x,player.y,player.z)){
+    if(player.onGround&&!collides(player.x,player.y+1.001,player.z)){player.y+=1;}
+    else{player.x=dx>0?Math.floor(player.x+HW)-HW-1e-4:Math.floor(player.x-HW)+1+HW+1e-4;player.vx=0;}
+  }
+  player.z+=dz;
+  if(collides(player.x,player.y,player.z)){
+    if(player.onGround&&!collides(player.x,player.y+1.001,player.z)){player.y+=1;}
+    else{player.z=dz>0?Math.floor(player.z+HW)-HW-1e-4:Math.floor(player.z-HW)+1+HW+1e-4;player.vz=0;}
+  }
+  player.x=Math.max(2.4,Math.min(WX-2.4,player.x));player.z=Math.max(2.4,Math.min(WZ-2.4,player.z));
+  /* vertical */
+  var prevY=player.y,dy=player.vy*dt,landed=false;player.y+=dy;
+  if(collides(player.x,player.y,player.z)){if(dy<0){player.y=Math.floor(player.y)+1;landed=true;}else{player.y=Math.floor(player.y+HH)-HH-1e-4;}player.vy=0;}
+  var standing=null;
+  if(player.vy<=0&&!landed){MPS.forEach(function(m){if(Math.abs(player.x-m.x)<m.w/2+HW&&Math.abs(player.z-m.z)<m.d/2+HW&&prevY>=m.y-.06&&player.y<=m.y+.001){player.y=m.y;player.vy=0;landed=true;standing=m;}});}
+  player.plat=standing;player.onGround=landed;
+  if(landed){
+    var below=getV(Math.floor(player.x),Math.floor(player.y-.1),Math.floor(player.z));
+    if(below===B.SLIME&&player.bounceCD<=0){player.vy=16.8;player.onGround=false;player.bounceCD=.3;}
+    else if(!standing){safeT+=dt;if(safeT>.35){lastSafe={x:player.x,y:player.y,z:player.z};}}
+  } else safeT=0;
+  if(player.y<-6){S.falls=(S.falls||0)+1;player.x=lastSafe.x;player.y=lastSafe.y+.1;player.z=lastSafe.z;player.vx=player.vz=player.vy=0;toast(S.falls>=4&&!S.assist?"Stuck? Press Esc, open Play, and turn on Platforming assist.":"Back to your last safe spot.");}
+  player.walk+=Math.hypot(player.vx,player.vz)*dt*1.5;
+  /* quills */
+  coinMeshes.forEach(function(c){if(c.got)return;if(Math.abs(c.cx-player.x)<.9&&Math.abs(c.cz-player.z)<.9&&Math.abs(c.cy-(player.y+.9))<1.4){c.got=true;c.mesh.visible=false;S.coins[c.id]=1;addPts(10);refreshHud();toast("Quill collected: +10 points");}});
+}
+
+/* ----- scene setup ----- */
+function setupScene(){
+  var canvas=$("gl");
+  scene=new THREE.Scene();
+  renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  camera=new THREE.PerspectiveCamera(62,1,.06,260);
+  scene.fog=new THREE.Fog(0x9ad0ff,60,170);scene.background=new THREE.Color(0x9ad0ff);
+  hemi=new THREE.HemisphereLight(0xdff0ff,0x7a6a50,.7);scene.add(hemi);
+  sun=new THREE.DirectionalLight(0xfff0d0,.55);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+  var sc=sun.shadow.camera;sc.left=-34;sc.right=34;sc.top=34;sc.bottom=-34;sc.near=1;sc.far=160;sun.shadow.bias=-.0006;
+  scene.add(sun);scene.add(sun.target);
+  atlasTex=buildAtlas();
+  worldMat=new THREE.MeshLambertMaterial({map:atlasTex,vertexColors:true});
+  /* ground beyond the world */
+  var far=new THREE.Mesh(new THREE.PlaneGeometry(900,900),new THREE.MeshBasicMaterial({color:0x4f8f3d}));far.rotation.x=-Math.PI/2;far.position.set(WX/2,2.9,WZ/2);scene.add(far);
+  buildMesh();
+  /* sun disc */
+  sunMesh=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshBasicMaterial({color:0xfff4c0,fog:false}));scene.add(sunMesh);
+  /* clouds */
+  var cr=mulberry(5);
+  for(var i=0;i<14;i++){var g=new THREE.Group(),n=3+((cr()*4)|0);for(var j=0;j<n;j++){var b=new THREE.Mesh(new THREE.BoxGeometry(8+cr()*8,2.5,7+cr()*6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.92,fog:false}));b.position.set(j*7-n*3,cr()*1.5,cr()*5);g.add(b);}
+    g.position.set(cr()*220-70,56+cr()*10,cr()*220-70);scene.add(g);clouds.push(g);}
+  /* NPC figures */
+  NPCS.forEach(function(n){n.fig=makeFigure(LOOK[n.look]);n.y=GY;n.fig.position.set(n.x,n.y,n.z);n.ph=Math.random()*6;n.yaw=0;scene.add(n.fig);
+    var lab=el("span",{class:"lab"},n.name);$("labels").append(lab);labels.push({n:n,e:lab});});
+  player.fig=makeFigure(LOOK.player);scene.add(player.fig);
+  /* quest marker */
+  marker=new THREE.Mesh(new THREE.OctahedronGeometry(.3),new THREE.MeshBasicMaterial({color:0xf0cc72,fog:false}));marker.scale.set(1,1.5,1);marker.visible=false;scene.add(marker);
+  /* pedestals, scrolls and beacons */
+  PED3.forEach(function(p){
+    var g=new THREE.Group();
+    var sc2=new THREE.Mesh(new THREE.BoxGeometry(.9,.2,.55),new THREE.MeshLambertMaterial({color:0xefe3b8,emissive:0x6a5a20}));g.add(sc2);
+    var e1=new THREE.Mesh(new THREE.BoxGeometry(.12,.28,.62),new THREE.MeshLambertMaterial({color:0xc9b077}));e1.position.x=.48;g.add(e1);
+    var e2=e1.clone();e2.position.x=-.48;g.add(e2);
+    var seal=new THREE.Mesh(new THREE.BoxGeometry(.14,.06,.14),new THREE.MeshBasicMaterial({color:0xb02a2a}));seal.position.y=.13;g.add(seal);
+    g.position.set(p.x,p.y+.2,p.z);scene.add(g);
+    var beam=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,40,12,1,true),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.22,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));beam.position.set(p.x,p.y+20,p.z);scene.add(beam);
+    pedMeshes.push({p:p,g:g,beam:beam,seal:seal});
+  });
+  /* quills */
+  COINS.forEach(function(c){var m=new THREE.Mesh(new THREE.BoxGeometry(.28,.5,.1),new THREE.MeshLambertMaterial({color:0xf2cf4a,emissive:0x8a6a10}));m.position.set(c.x,c.y,c.z);scene.add(m);
+    coinMeshes.push({id:c.id,mesh:m,cx:c.x,cy:c.y,cz:c.z,got:!!S.coins[c.id]});if(S.coins[c.id])m.visible=false;});
+  /* moving platforms */
+  var pt=tex(16,16,function(g){paintTile(g,0,"planks");});
+  MPS.forEach(function(m){var t2=pt.clone();t2.needsUpdate=true;t2.wrapS=t2.wrapT=THREE.RepeatWrapping;t2.repeat.set(m.w,m.d);
+    var mm=new THREE.Mesh(new THREE.BoxGeometry(m.w,1,m.d),new THREE.MeshLambertMaterial({map:t2,color:0xffe0a0}));mm.castShadow=mm.receiveShadow=true;scene.add(mm);mpMeshes.push(mm);});
+  window.addEventListener("resize",onResize);onResize();
+}
+function onResize(){var w=window.innerWidth,h=window.innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+
+/* ----- interaction ----- */
+function nearest(){
+  var best=null,bd=1e9,px=player.x,pz=player.z;
+  function test(o,x,z,y,r,kind){var d=Math.hypot(x-px,z-pz);if(d<r&&Math.abs(y-player.y)<4&&d<bd){bd=d;best={o:o,kind:kind};}}
+  NPCS.forEach(function(n){if(n.ghost&&!gateOpen())return;test(n,n.x,n.z,n.y,3.2,"npc");});
+  PED3.forEach(function(p){test(p,p.x,p.z,p.y,S.assist?24:3.4,"ped");});
+  if(S.assist){/* assist ignores height */var bestP=null,bp=1e9;PED3.forEach(function(p){var d=Math.hypot(p.x-px,p.z-pz);if(d<24&&d<bp){bp=d;bestP=p;}});if(bestP&&bp<bd){best={o:bestP,kind:"ped"};}}
+  test(MON,MON.x,MON.z,MON.y,4,"mon");
+  if(!gateOpen())test({},GATE_X+.5,47.5,GY,4.5,"gate");
+  return best;
+}
+function interact(){
+  var t=nearest();if(!t)return;
+  if(t.kind==="npc")npcTalk(t.o);
+  else if(t.kind==="ped")pedTalk({g:t.o.g});
+  else if(t.kind==="gate")openDlg([N("A purple haze shimmers across the gate to the garden. It is sealed for now. It will open when the vote is done and the Declaration has been adopted.")]);
+  else if(t.kind==="mon")monTalk();
+}
+
+/* ----- input ----- */
+var KMAP={w:"f",s:"b",a:"l",d:"r"};
+window.addEventListener("keydown",function(e){
+  var k=e.key;if(titleOpen)return;var tgt=e.target&&e.target.tagName;
+  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}return;}
+  if(!$("dlg").hidden){
+    if(k==="Escape"){e.preventDefault();openMenu();return;}
+    if((k==="z"||k==="Z"||k==="e"||k==="E")&&tgt!=="TEXTAREA"&&tgt!=="INPUT"){var g=$("dlg").querySelector(".go:not([disabled])");if(g){e.preventDefault();g.click();}}
+    else if(k==="ArrowDown"||k==="ArrowUp"){var os=[].slice.call($("dlg").querySelectorAll(".opt"));if(os.length){e.preventDefault();var i=os.indexOf(document.activeElement);i=k==="ArrowDown"?Math.min(os.length-1,i+1):Math.max(0,i<0?0:i-1);os[i].focus();}}
+    return;
+  }
+  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}return;}
+  if(k==="Escape"||k==="m"||k==="M"){e.preventDefault();openMenu();return;}
+  if(k==="e"||k==="E"||k==="Enter"||k==="z"||k==="Z"){e.preventDefault();interact();return;}
+  if(k===" "){e.preventDefault();jumpBuf=.14;return;}
+  if(k==="Shift"){keys.run=true;return;}
+  var lk=k.length===1?k.toLowerCase():k;
+  if(KMAP[lk]){e.preventDefault();keys[KMAP[lk]]=true;}
+  else if(k==="ArrowLeft"){e.preventDefault();keys.cl=true;}else if(k==="ArrowRight"){e.preventDefault();keys.cr=true;}
+  else if(k==="ArrowUp"){e.preventDefault();keys.cu=true;}else if(k==="ArrowDown"){e.preventDefault();keys.cd=true;}
+});
+window.addEventListener("keyup",function(e){var k=e.key,lk=k.length===1?k.toLowerCase():k;if(k==="Shift")keys.run=false;if(KMAP[lk])keys[KMAP[lk]]=false;if(k==="ArrowLeft")keys.cl=false;if(k==="ArrowRight")keys.cr=false;if(k==="ArrowUp")keys.cu=false;if(k==="ArrowDown")keys.cd=false;});
+window.addEventListener("blur",function(){keys={};});
+var drag=null;
+document.addEventListener("pointerdown",function(e){if(titleOpen||modal)return;if(e.target.closest&&e.target.closest("#hud,#touch,#dlg,#menu,#title,button"))return;drag={x:e.clientX,y:e.clientY,id:e.pointerId};});
+document.addEventListener("pointermove",function(e){if(!drag||e.pointerId!==drag.id)return;cam.yaw-=(e.clientX-drag.x)*.0055;cam.pitch=Math.max(-.1,Math.min(1.3,cam.pitch+(e.clientY-drag.y)*.004));drag.x=e.clientX;drag.y=e.clientY;});
+document.addEventListener("pointerup",function(){drag=null;});document.addEventListener("pointercancel",function(){drag=null;});
+document.addEventListener("wheel",function(e){if(modal||titleOpen)return;cam.dist=Math.max(3.5,Math.min(11,cam.dist+e.deltaY*.005));},{passive:true});
+[].forEach.call(document.querySelectorAll("#dpad button"),function(b){
+  var d=b.getAttribute("data-k");function on(e){e.preventDefault();keys[d]=true;}function off(e){e.preventDefault();keys[d]=false;}
+  b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
+});
+$("tA").addEventListener("click",function(){if(!modal)interact();});
+$("tJ").addEventListener("pointerdown",function(e){e.preventDefault();if(!modal)jumpBuf=.14;});
+$("tMenu").addEventListener("click",function(){if(!modal||($("menu").hidden&&!$("dlg").hidden))openMenu();});
+
+/* ----- compass target ----- */
+function targetPos(){
+  var c=S.ch,id=null;
+  var map=["lee","adams","rider","jefferson","sherman",null,"franklin","jefferson","seller","adams",null,null,null];
+  if(c===5){var best=null,bd=1e9;PED3.forEach(function(p){if(S.g[p.g]&&S.g[p.g].done)return;var d=Math.hypot(p.x-player.x,p.z-player.z);if(d<bd){bd=d;best=p;}});return best?{x:best.x,z:best.z,y:best.y}:null;}
+  if(c===10){var bg=null,bd2=1e9;NPCS.forEach(function(n){if(!n.ghost||S.enc["gh_"+n.id])return;var d=Math.hypot(n.x-player.x,n.z-player.z);if(d<bd2){bd2=d;bg=n;}});return bg?{x:bg.x,z:bg.z,y:GY}:{x:MON.x,z:MON.z,y:GY};}
+  if(c===11)return{x:MON.x,z:MON.z,y:GY};
+  id=map[c];if(!id)return null;
+  var n2=NPCS.filter(function(n){return n.id===id;})[0];return n2?{x:n2.x,z:n2.z,y:GY}:null;
+}
+
+/* ----- third-person camera with volumetric collision ----- */
+var camDist=cam.dist,pitchBoost=0,camReady=false,figMats=null;
+function camBlocked(x,y,z,r){
+  var x0=Math.floor(x-r),x1=Math.floor(x+r),y0=Math.floor(y-r),y1=Math.floor(y+r),z0=Math.floor(z-r),z1=Math.floor(z+r);
+  for(var yy=y0;yy<=y1;yy++)for(var zz=z0;zz<=z1;zz++)for(var xx=x0;xx<=x1;xx++)if(solidAt(xx,yy,zz))return true;
+  return false;
+}
+function rayLimit(px,py,pz,yaw,pitch,maxD){
+  var cp=Math.cos(pitch),dx=Math.sin(yaw)*cp,dy=Math.sin(pitch),dz=Math.cos(yaw)*cp;
+  for(var t=.25;t<=maxD+1e-6;t+=.1){
+    var r=Math.min(.32,.06+t*.09);
+    if(camBlocked(px+dx*t,py+dy*t,pz+dz*t,r))return Math.max(.2,t-.12);
+  }
+  return maxD;
+}
+function setFigAlpha(fig,a){
+  if(!figMats){figMats=[];fig.traverse(function(o){if(o.isMesh){(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){if(figMats.indexOf(m)<0)figMats.push(m);});}});}
+  fig.visible=a>.06;
+  figMats.forEach(function(m){var tr=a<.98;if(m.transparent!==tr){m.transparent=tr;m.needsUpdate=true;}m.opacity=a;});
+}
+function placeCamera(dt){
+  var tx=player.x,ty=player.y+1.55,tz=player.z;
+  var pitch=Math.min(1.35,cam.pitch+pitchBoost);
+  var hard=rayLimit(tx,ty,tz,cam.yaw,pitch,cam.dist),soft=cam.dist;
+  var probes=[[.3,0],[-.3,0],[0,.22],[0,-.22],[.2,.15],[-.2,.15]];
+  for(var i=0;i<probes.length;i++){var rl=rayLimit(tx,ty,tz,cam.yaw+probes[i][0],Math.max(-.2,Math.min(1.45,pitch+probes[i][1])),cam.dist);if(rl<cam.dist)soft=Math.min(soft,rl+1.7);}
+  var want=Math.min(cam.dist,hard,soft);
+  if(!camReady){camDist=want;camReady=true;}
+  var rate=want<camDist?9:2.2;
+  camDist+=(want-camDist)*Math.min(1,dt*rate);
+  var finalD=Math.min(camDist,hard);
+  /* when squeezed, lift the camera a little for a better view over the obstacle */
+  var tb=hard<cam.dist*.55?.38:0;pitchBoost+=(tb-pitchBoost)*Math.min(1,dt*2.5);
+  var cp=Math.cos(pitch),dx=Math.sin(cam.yaw)*cp,dy=Math.sin(pitch),dz=Math.cos(cam.yaw)*cp;
+  camera.position.set(tx+dx*finalD,ty+dy*finalD,tz+dz*finalD);camera.lookAt(tx,ty,tz);
+  if(player.fig)setFigAlpha(player.fig,Math.max(0,Math.min(1,(finalD-.9)/1.3)));
+  return finalD;
+}
+
+/* ----- per-frame update and render ----- */
+var last=0,saveT=0,tmpV=null;
+function animFig(f,t,swing,moving){
+  var u=f.userData,a=moving?Math.sin(t*1)*swing:0;
+  u.armL.rotation.x=-a;u.armR.rotation.x=a;u.legL.rotation.x=a;u.legR.rotation.x=-a;
+}
+function updateWorld(dt){
+  var i;
+  if(keys.cl)cam.yaw+=1.9*dt;if(keys.cr)cam.yaw-=1.9*dt;if(keys.cu)cam.pitch=Math.min(1.3,cam.pitch+1.2*dt);if(keys.cd)cam.pitch=Math.max(-.1,cam.pitch-1.2*dt);
+  if(!modal&&!titleOpen){var acc=0,step=1/90;last_acc+=dt;while(last_acc>=step){stepPhysics(step);last_acc-=step;if(++acc>10){last_acc=0;break;}}}
+  var moving=Math.hypot(player.vx,player.vz)>.5&&player.onGround;
+  player.fig.position.set(player.x,player.y,player.z);player.fig.rotation.y=player.face;
+  animFig(player.fig,player.walk*1.8,.9,moving);
+  if(!player.onGround){player.fig.userData.armL.rotation.x=-2.6;player.fig.userData.armR.rotation.x=-2.6;}
+  NPCS.forEach(function(n){
+    if(n.ghost){n.fig.visible=gateOpen();n.fig.position.y=n.y+.15+Math.sin(time*2+n.ph)*.12;}
+    var dx=player.x-n.x,dz=player.z-n.z,d=Math.hypot(dx,dz);
+    if(d<9&&(!n.ghost||gateOpen())){var ty=Math.atan2(dx,dz),df=((ty-n.yaw+Math.PI*3)%(Math.PI*2))-Math.PI;n.yaw+=df*Math.min(1,dt*6);}
+    n.fig.rotation.y=n.yaw;var u=n.fig.userData;u.head.rotation.x=Math.sin(time*1.3+n.ph)*.03;u.armL.rotation.x=Math.sin(time*1.2+n.ph)*.04;u.armR.rotation.x=-Math.sin(time*1.2+n.ph)*.04;
+  });
+  /* marker */
+  var mk=null;
+  NPCS.forEach(function(n){if(npcAvailable(n)&&(!n.ghost||gateOpen()))mk={x:n.x,z:n.z,y:GY+n.fig.userData.top+.7+(n.ghost?.2:0)};});
+  /* choose nearest available as marker (prefer main) */
+  var bestM=null,bdM=1e9;NPCS.forEach(function(n){if(npcAvailable(n)&&(!n.ghost||gateOpen())){var d=Math.hypot(n.x-player.x,n.z-player.z);if(d<bdM){bdM=d;bestM=n;}}});
+  if(bestM)mk={x:bestM.x,z:bestM.z,y:GY+bestM.fig.userData.top+.7+(bestM.ghost?.2:0)};
+  if(!mk&&S.ch===11)mk={x:MON.x,z:MON.z,y:MON.y+6.5};
+  if(mk){marker.visible=true;marker.position.set(mk.x,mk.y+Math.sin(time*3)*.12,mk.z);marker.rotation.y=time*2;}else marker.visible=false;
+  /* pedestals */
+  pedMeshes.forEach(function(pm){var done=S.g[pm.p.g]&&S.g[pm.p.g].done;pm.g.position.y=pm.p.y+.25+Math.sin(time*2+pm.p.x)*.08;pm.g.rotation.y=time*.8;
+    pm.beam.visible=S.ch>=5&&!done;pm.seal.material.color.set(done?0x3fae6e:0xb02a2a);});
+  coinMeshes.forEach(function(c){if(!c.got){c.mesh.rotation.y=time*2.4+c.cx;c.mesh.position.y=c.cy+Math.sin(time*2+c.cz)*.1;}});
+  MPS.forEach(function(m,i2){mpMeshes[i2].position.set(m.x,m.y-.5,m.z);});
+  clouds.forEach(function(c){c.position.x+=dt*1.4;if(c.position.x>170)c.position.x=-110;});
+  /* sky tint follows the story */
+  var tt=Math.min(1,S.ch/10),sky=new THREE.Color().setHSL(.57-.5*tt*.0,0,0);
+  var cA=new THREE.Color(0x9ad0ff),cB=new THREE.Color(0xffb878);sky=cA.clone().lerp(cB,tt);
+  scene.background.copy(sky);scene.fog.color.copy(sky);
+  var lA=new THREE.Color(0xfff6e6),lB=new THREE.Color(0xffc890);sun.color.copy(lA.clone().lerp(lB,tt));hemi.color.copy(new THREE.Color(0xdff0ff).lerp(new THREE.Color(0xffd8b0),tt));
+  var ang=.9-.45*tt;
+  var sx=Math.cos(ang)*.55,sy2=Math.sin(ang),sz=-.6;
+  sun.position.set(player.x+sx*70,player.y+sy2*80,player.z+sz*70);sun.target.position.set(player.x,player.y,player.z);
+  placeCamera(dt);
+  sunMesh.position.set(camera.position.x+sx*220,camera.position.y+sy2*220+10,camera.position.z+sz*220);sunMesh.lookAt(camera.position);
+  /* labels */
+  labels.forEach(function(L){var n=L.n,d=Math.hypot(n.x-player.x,n.z-player.z);
+    if(d>14||(n.ghost&&!gateOpen())){L.e.style.display="none";return;}
+    var v=new THREE.Vector3(n.x,GY+n.fig.userData.top+.35,n.z).project(camera);
+    if(v.z>1||v.z<-1){L.e.style.display="none";return;}
+    L.e.style.display="block";L.e.style.left=((v.x*.5+.5)*window.innerWidth)+"px";L.e.style.top=((-v.y*.5+.5)*window.innerHeight)+"px";L.e.style.opacity=Math.max(.25,1-d/16);});
+  /* compass */
+  var tp=targetPos(),cmp=$("compass");
+  if(tp&&!modal&&!titleOpen){var vx=tp.x-player.x,vz=tp.z-player.z,fxx=-Math.sin(cam.yaw),fzz=-Math.cos(cam.yaw),rxx=Math.cos(cam.yaw),rzz=-Math.sin(cam.yaw);
+    var rel=Math.atan2(vx*rxx+vz*rzz,vx*fxx+vz*fzz);cmp.hidden=false;$("arrow").style.transform="rotate("+rel+"rad)";$("cdist").textContent=Math.round(Math.hypot(vx,vz))+" blocks"+(tp.y-player.y>3?", up":tp.y-player.y<-3?", down":"");}
+  else cmp.hidden=true;
+}
+var last_acc=0;
+function frame(ts){
+  var dt=Math.min(.05,(ts-last)/1000||0);last=ts;time+=dt;
+  updateWorld(dt);
+  renderer.render(scene,camera);
+  var t=nearest(),h=$("hint");
+  if(t&&!modal&&!titleOpen){var nm=t.kind==="npc"?t.o.name:t.kind==="ped"?"the charge scroll":t.kind==="mon"?"the monument":"the gate";h.hidden=false;h.textContent="E / Enter: examine "+nm;}else h.hidden=true;
+  saveT+=dt;if(saveT>3){saveT=0;persist();}
+  requestAnimationFrame(frame);
+}
+function persist(){S.x=player.x;S.y=player.y;S.z=player.z;S.yaw=cam.yaw;S.face=player.face;save();}
+
+function npcTalk(n){
+  var e=ENC.filter(function(x){return x.npc===n.id&&!S.enc[x.id]&&(x.side?S.ch>=x.ch:S.ch===x.ch);})[0];
+  if(e)return startEnc(e);
+  var later=ENC.filter(function(x){return x.npc===n.id&&!S.enc[x.id];})[0];
+  if(later)return openDlg([N(n.name+" is occupied for now. Check the objective in the corner of the screen.")]);
+  openDlg([N(IDLE[n.id]||"They nod to you.")]);
+}
+function startEnc(e){openDlg(e.beats(),function(){S.enc[e.id]=1;if(e.after)e.after();updateGate();save();refreshHud();});}
+function chargeCount(){return GRIEVANCES.filter(function(g){return S.g[g.id]&&S.g[g.id].done;}).length;}
+function pedTalk(p){
+  var g=GRIEVANCES.filter(function(x){return x.id===p.g;})[0];
+  if(S.ch<5)return openDlg([N("A scroll rests on a stone pedestal, sealed with a pale ribbon. It isn’t ready to be read yet. Finish the Preamble first.")]);
+  if(S.g[g.id]&&S.g[g.id].done)return openDlg([N("You have already examined this charge: “"+g.title+".” Your note is saved in your satchel.")]);
+  openDlg([
+    N("A scroll from the Declaration’s list of charges lies on the pedestal."),
+    {k:"q",s:{who:"The Declaration of Independence",role:"Final text, list of grievances",when:"July 4, 1776",kind:"Primary source",retro:false,text:g.text}},
+    N("The colonists’ experience. "+g.ctx),
+    MC(g.id+".m",g.check),
+    NT(g.id+".n",{title:"In your own words",min:10,pts:50,prompt:"In one or two sentences, explain how you see this charge addressed in our society today, or how the colonists’ experience shaped it.",store:function(t){S.g[g.id]={done:true,note:t};}})
+  ],function(){
+    if(S.ch===5&&chargeCount()>=3){S.ch=6;}
+    save();refreshHud();
+  });
+}
+function monTalk(){
+  if(S.ch<11)return openDlg([N("A pale monument stands at the center of the Hall, its face blank. It will fill with words once the visitors here have been heard.")]);
+  if(S.enc.refl)return openDlg([N("The monument glows softly. Your reflection is saved in your satchel.")]);
+  openDlg([
+    N("Words rise on the monument as you read them, in the voices you have heard: Mason and Jefferson, Abigail Adams and Franklin, Douglass, Lincoln, King. It asks one question of you."),
+    NT("refl",{title:"The reflection brief",min:100,pts:100,bank:1,prompt:"Write one or two paragraphs: is the Declaration of Independence, or isn’t it, a reflection of American values? What common themes or values do you see as core, and how do you see them reflected today, especially in the legal system? Where is the document contradictory to the society of its time, or to society today? Use quotes.",store:function(t){S.refl=t;}})
+  ],function(){S.enc.refl=1;S.ch=12;S.done=true;S.completedOn=new Date().toISOString();save();refreshHud();openFinale();});
+}
+
+/* ============ DIALOG ENGINE ============ */
+var run=null,typing=null;
+function setModal(on){modal=on;document.body.classList.toggle("modal",on);if(on)keys={};}
+function openDlg(beats,done){run={beats:beats,i:-1,done:done};$("dlg").hidden=false;setModal(true);nextBeat();}
+function closeDlg(){$("dlg").hidden=true;setModal(false);var d=run&&run.done;run=null;typing=null;if(d)d();}
+function skipBeat(b){return(b.k==="mc"||b.k==="hl"||b.k==="note")&&S.b[b.key]&&S.b[b.key].done;}
+function nextBeat(){run.i++;while(run.i<run.beats.length&&skipBeat(run.beats[run.i]))run.i++;if(run.i>=run.beats.length)return closeDlg();renderBeat(run.beats[run.i]);}
+function typeText(node,text,cb){
+  if(REDUCED){node.textContent=text;cb();return;}
+  var i=0;node.textContent="";
+  var iv=setInterval(function(){i+=2;node.textContent=text.slice(0,i);if(i>=text.length){clearInterval(iv);typing=null;cb();}},16);
+  typing={finish:function(){clearInterval(iv);node.textContent=text;typing=null;cb();}};
+}
+function setName(n){$("dName").textContent=n||"";}
+function setTag(s){var t=$("dTag");if(!s){t.hidden=true;return;}t.hidden=false;t.textContent=s.kind;t.className=s.retro?"retro":"prim";}
+function goBtn(label,onclick,disabled){
+  var b=el("button",{class:"go",type:"button",onclick:onclick},label);if(disabled)b.disabled=true;$("dFoot").replaceChildren(b);setTimeout(function(){try{b.focus({preventScroll:true});}catch(e){}},0);return b;
+}
+function typedBeat(textNode,text,label){
+  var b=goBtn("Skip ▶",function(){if(typing){typing.finish();}else nextBeat();});
+  typeText(textNode,text,function(){b.textContent=label||"Continue ▼";});
+}
+function renderBeat(b){
+  var body=$("dBody"),foot=$("dFoot");body.replaceChildren();foot.replaceChildren();setTag(null);body.scrollTop=0;
+  if(b.k==="n"){setName("");var p=el("p",{class:"narr"});body.append(p);if(b.btns){p.textContent=b.t;foot.replaceChildren.apply(foot,b.btns.map(function(x){return el("button",{class:"go",type:"button",onclick:x.fn},x.label);}));}else typedBeat(p,b.t);}
+  else if(b.k==="q"){setName(b.s.who);setTag(b.s);var q=el("p",{class:"quote"});body.append(q,el("p",{class:"cap"},b.s.role+". "+b.s.when+"."));typedBeat(q,"“"+b.s.text+"”");}
+  else if(b.k==="l"){setName("Lawyer’s lens: "+b.term);var p2=el("p",{class:"lens"});body.append(p2);typedBeat(p2,b.t);}
+  else if(b.k==="mc")mcBeat(b);
+  else if(b.k==="hl")hlBeat(b);
+  else if(b.k==="note")noteBeat(b);
+}
+function award(id){if(!id||S.cards[id])return;S.cards[id]=1;var c=CARDS[id];toast((c.kind==="ledger"?"Ledger card: ":c.kind==="insight"?"Insight card: ":"Echo card: ")+c.title);save();refreshHud();}
+function addPts(n){S.pts=Math.max(0,S.pts+n);}
+var toastT;function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},3600);}
+function sealEl(k){return el("span",{class:"seal "+k,"aria-hidden":"true"},k==="echo"?"⚖":k==="ledger"?"≠":"✒");}
+function kindName(k){return k==="echo"?"Echo card":k==="ledger"?"Ledger card":"Insight card";}
+
+function mcBeat(b){
+  var ck=b.ck,st=S.b[b.key]||(S.b[b.key]={tries:0,wrong:[],done:false,gain:0});
+  setName(ck.card&&CARDS[ck.card].kind==="echo"?"Find the echo in today’s law":"Think like a lawyer");
+  var body=$("dBody"),fb=el("div",{class:"fb",role:"status","aria-live":"polite"}),wrap=el("div");
+  body.append(el("p",null,ck.prompt),wrap,fb);
+  var btns=ck.opts.map(function(o,i){var bt=el("button",{type:"button",class:"opt"},o.t);bt.addEventListener("click",function(){pick(i);});wrap.append(bt);return bt;});
+  var go=goBtn("Continue ▼",function(){nextBeat();},true);
+  function pick(i){if(st.done||st.wrong.indexOf(i)>=0)return;
+    if(ck.opts[i].ok){st.done=true;st.gain=Math.max(25,100-50*st.tries);addPts(st.gain);if(ck.card)award(ck.card);}
+    else{st.tries++;st.wrong.push(i);}
+    save();refresh();refreshHud();}
+  function refresh(){fb.replaceChildren();
+    btns.forEach(function(bt,i){var wr=st.wrong.indexOf(i)>=0,rt=st.done&&ck.opts[i].ok;bt.className="opt"+(wr?" wrong":"")+(rt?" right":"");bt.setAttribute("aria-disabled",(wr||st.done)?"true":"false");if(wr)fb.append(el("p",{class:"no"},"Not quite: "+ck.opts[i].why));});
+    if(st.done){var ok=ck.opts.filter(function(o){return o.ok;})[0];fb.append(el("p",{class:"yes"},"Correct: "+ok.why+" (+"+st.gain+" points)"));
+      if(ck.card){var c=CARDS[ck.card];fb.append(el("div",{class:"earned"},sealEl(c.kind),el("div",null,el("b",null,kindName(c.kind)+": "+c.title),el("div",{class:"cap"},c.blurb))));}
+      go.disabled=false;go.focus();}else go.disabled=true;
+    $("dBody").scrollTop=$("dBody").scrollHeight;}
+  refresh();if(!st.done){try{btns[0].focus({preventScroll:true});}catch(e){}}
+}
+function hlBeat(b){
+  var hl=b.hl,st=S.b[b.key]||(S.b[b.key]={sel:[],found:[],bad:[],attempts:0,done:false});
+  setName("Mark the ledger");
+  var target=hl.segs.filter(function(s){return s.k&&s.c;}).length;
+  var para=el("p",{class:"passage"}),info=el("p",{class:"cap"}),fb=el("div",{class:"fb",role:"status","aria-live":"polite"});
+  var check=el("button",{class:"go",type:"button"},"Check my highlights");
+  $("dBody").append(el("p",null,hl.prompt),para,info,fb);
+  var nodes={};
+  hl.segs.forEach(function(sg,i){if(!sg.k){para.append(document.createTextNode(sg.t));return;}
+    var bt=el("button",{type:"button",class:"hls","aria-pressed":"false"},sg.t);bt.addEventListener("click",function(){toggle(i);});nodes[i]=bt;para.append(bt);});
+  var cont=el("button",{class:"go",type:"button",onclick:function(){nextBeat();}},"Continue ▼");
+  $("dFoot").replaceChildren(check);
+  function toggle(i){if(st.done||st.found.indexOf(i)>=0)return;var ix=st.sel.indexOf(i);if(ix>=0)st.sel.splice(ix,1);else{st.sel.push(i);var bi=st.bad.indexOf(i);if(bi>=0)st.bad.splice(bi,1);}save();refresh();}
+  check.addEventListener("click",function(){if(st.done||!st.sel.length)return;st.attempts++;
+    st.sel.forEach(function(i){var sg=hl.segs[i];if(sg.c){st.found.push(i);addPts(50);award(sg.id);}else{st.bad.push(i);addPts(-15);}});
+    st.sel=[];if(st.found.length>=target||st.attempts>=3)st.done=true;save();refresh();refreshHud();});
+  function refresh(){fb.replaceChildren();
+    Object.keys(nodes).forEach(function(k){var i=+k,sg=hl.segs[i],bt=nodes[k],fd=st.found.indexOf(i)>=0,sl=st.sel.indexOf(i)>=0,bd=st.bad.indexOf(i)>=0,ms=st.done&&sg.c&&!fd;
+      bt.className="hls"+(fd?" found":"")+(bd?" decoy":"")+(ms?" missed":"");bt.setAttribute("aria-pressed",(fd||sl)?"true":"false");bt.setAttribute("aria-disabled",(fd||st.done)?"true":"false");});
+    st.found.forEach(function(i){var sg=hl.segs[i];fb.append(el("p",{class:"yes"},"Found “"+sg.t+"”. "+sg.title+". "+sg.why+" (+50 points, ledger card earned)"));});
+    st.bad.forEach(function(i){var sg=hl.segs[i];fb.append(el("p",{class:"no"},"Not a contradiction: “"+sg.t+"”. "+sg.why+" (−15 points)"));});
+    if(st.done)hl.segs.forEach(function(sg,i){if(sg.k&&sg.c&&st.found.indexOf(i)<0)fb.append(el("p",{class:"miss"},"You missed this one: “"+sg.t+"”. "+sg.why));});
+    if(st.done){info.textContent="Highlighting complete.";$("dFoot").replaceChildren(cont);cont.focus();}
+    else{var left=target-st.found.length;info.textContent="Try "+(st.attempts+1)+" of 3. "+left+" contradiction"+(left===1?"":"s")+" left to find.";check.disabled=!st.sel.length;}
+    $("dBody").scrollTop=$("dBody").scrollHeight;}
+  refresh();
+}
+function bankItems(){var out=[];Object.keys(SRC).forEach(function(k){var s=SRC[k];if(s.short)out.push(s);});return out;}
+function noteBeat(b){
+  var o=b.o,st=S.b[b.key]||(S.b[b.key]={done:false,text:""});setName(o.title);
+  var ta=el("textarea",{rows:o.min>=100?"9":"5","aria-label":o.title});ta.value=st.text||"";
+  var cnt=el("p",{class:"wc"}),body=$("dBody");
+  body.append(el("p",null,o.prompt));
+  if(o.bank){var bank=el("div",{class:"bank"});bankItems().forEach(function(q){bank.append(el("button",{type:"button",title:"Insert this quote",onclick:function(){
+    var ins="“"+q.short+"” ("+q.who+", "+q.yr+")",s=ta.selectionStart==null?ta.value.length:ta.selectionStart,e=ta.selectionEnd==null?s:ta.selectionEnd;
+    ta.value=ta.value.slice(0,s)+ins+ta.value.slice(e);st.text=ta.value;save();var p=s+ins.length;ta.focus();try{ta.setSelectionRange(p,p);}catch(x){}upd();}},"“"+q.short+"” "+q.who));});
+    body.append(el("p",{class:"cap"},"Quote bank (tap to insert at your cursor):"),bank);}
+  body.append(el("p",{class:"cap"},"Tip: press Esc (or the Satchel button) to look at your cards, draft, and notes while you write. Your writing stays saved."));
+  body.append(ta,cnt);
+  var go=goBtn("Save note",function(){if(go.disabled)return;st.done=true;st.text=ta.value;addPts(o.pts||50);o.store(ta.value);save();refreshHud();nextBeat();},true);
+  var sb=el("button",{class:"go",type:"button",onclick:function(){st.text=ta.value;save();openMenu();}},"Open satchel");$("dFoot").prepend(sb);
+  function upd(){var n=wc(ta.value);cnt.textContent=n+" words"+(n>=o.min?"":" ("+o.min+" needed)");cnt.className="wc"+(n>=o.min?" ok":"");go.disabled=n<o.min;}
+  ta.addEventListener("input",function(){st.text=ta.value;save();upd();});
+  upd();setTimeout(function(){try{ta.focus({preventScroll:true});}catch(e){}},0);
+}
+
+/* ============ HUD / MENU ============ */
+function objective(){
+  var c=S.ch;
+  var echoN=GHOSTS.filter(function(g){return S.enc["gh_"+g.id];}).length;
+  var m=[
+   "Speak with Richard Henry Lee on the State House steps.",
+   "Find John Adams outside the City Tavern, on the west side of the plaza.",
+   "A post rider from Virginia waits at the east end of the plaza, near the lamp.",
+   "Visit Thomas Jefferson at the Graff House, on the east side.",
+   "Find Roger Sherman near the State House steps. Then write your Preamble analysis.",
+   "Climb the platforming trials in the yard to the south and read at least three charge scrolls at the top ("+chargeCount()+"/3). Follow the golden beams.",
+   "Sit with Benjamin Franklin under the big tree in the yard.",
+   "Return to Thomas Jefferson at the Graff House.",
+   "Visit the pamphlet seller’s stall on the lower sidewalk.",
+   "Speak with John Adams again outside the City Tavern.",
+   "Enter the Hall of Echoes in the south-west yard and hear each visitor ("+echoN+"/4).",
+   "Read the monument at the center of the Hall.",
+   "Your case file is complete. Explore, revisit scrolls, or open your satchel to copy it."
+  ];
+  return m[c]||m[12];
+}
+function refreshHud(){
+  $("objT").textContent=objective();$("pts").textContent=S.pts+" points";$("bc").textContent=Object.keys(S.cards).length+"/"+TOTAL;$("qc").textContent="Quills "+Object.keys(S.coins||{}).length+"/"+COINS.length;
+}
+var DRAFT=[
+ {id:"p1",on:function(){return S.enc.rider;},text:"We hold these truths to be self-evident, that all men are created equal,",note:"Jefferson’s rough draft read “sacred & undeniable.” The change to “self-evident” is generally credited to Franklin."},
+ {id:"p2",on:function(){return S.enc.jeff1;},text:"that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness."},
+ {id:"p3",on:function(){return S.enc.sherman;},text:"—That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, —That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government."},
+ {id:"gl",lab:1,on:function(){return chargeCount()>0;},text:"The facts you submitted to a candid world"}
+].concat(GRIEVANCES.map(function(g){return{id:g.id,on:function(){return S.g[g.id]&&S.g[g.id].done;},text:g.text};})).concat([
+ {id:"struck",cls:"struck",on:function(){return S.enc.jeff2;},text:"He has waged cruel war against human nature itself, violating it’s most sacred rights of life & liberty in the persons of a distant people who never offended him, captivating & carrying them into slavery in another hemisphere …",note:"Struck by Congress, July 1776."},
+ {id:"close",on:function(){return S.enc.adams2;},text:"And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.",note:"Approved by Congress, July 4, 1776. John Hancock, President."}
+]);
+function caseText(){
+  var L=[];L.push("CASE FILE: THE COMMITTEE OF FIVE (WORLD EDITION)");L.push("Clerk: "+(S.name||"Anonymous"));
+  L.push("Points: "+S.pts+"   Binder: "+Object.keys(S.cards).length+" of "+TOTAL+" cards");L.push("");
+  L.push("PART 1. ANALYSIS OF CORE IDEAS");L.push("The Preamble");L.push(S.note1||"(not written)");L.push("");L.push("The charges I examined");
+  GRIEVANCES.forEach(function(g){var gs=S.g[g.id];if(!gs||!gs.done)return;L.push("- “"+g.text+"”");L.push("  Today: "+CARDS[g.check.card].title+" ("+CARDS[g.check.card].sub+")");L.push("  My explanation: "+gs.note);});
+  L.push("");L.push("PART 2. CONTRADICTION LEDGER");
+  var led=Object.keys(S.cards).filter(function(k){return CARDS[k].kind==="ledger";});if(!led.length)L.push("(none logged)");
+  led.forEach(function(k){L.push("- "+CARDS[k].title+": "+CARDS[k].blurb);});
+  L.push("");L.push("ECHO CARDS EARNED");
+  var ech=Object.keys(S.cards).filter(function(k){return CARDS[k].kind==="echo";});if(!ech.length)L.push("(none)");
+  ech.forEach(function(k){L.push("- "+CARDS[k].title+" ("+CARDS[k].sub+")");});
+  L.push("");L.push("PART 3. REFLECTION");L.push(S.refl||"(not written)");return L.join("\n");
+}
+function copyBtn(ta,txt){
+  var b=el("button",{class:"go",type:"button"},"Copy case file");
+  b.addEventListener("click",function(){function ok(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy case file";},2000);}
+    function fb(){ta.focus();ta.select();try{if(document.execCommand("copy"))ok();else b.textContent="Press Ctrl+C or Cmd+C";}catch(e){b.textContent="Press Ctrl+C or Cmd+C";}}
+    try{navigator.clipboard.writeText(txt).then(ok,fb);}catch(e){fb();}});
+  return b;
+}
+var TABS=["Draft","Binder","Journal","Case file","Play"],curTab=0;
+function openMenu(){$("menu").hidden=false;setModal(true);$("mClose").textContent=$("dlg").hidden?"Close":"Back to writing";drawTabs();}
+function closeMenu(){$("menu").hidden=true;var dlgOpen=!$("dlg").hidden;setModal(dlgOpen);if(dlgOpen){var t=$("dlg").querySelector("textarea");if(t){try{t.focus({preventScroll:true});}catch(e){}}}}
+function drawTabs(){
+  var tb=$("tabs");tb.replaceChildren();
+  TABS.forEach(function(t,i){tb.append(el("button",{type:"button",role:"tab","aria-selected":i===curTab?"true":"false",onclick:function(){curTab=i;drawTabs();}},t));});
+  var b=$("mbody");b.replaceChildren();
+  if(curTab===0){
+    b.append(el("h3",null,"The Declaration, as you write it"));
+    var any=false;DRAFT.forEach(function(d){if(!d.on())return;any=true;
+      if(d.lab)b.append(el("p",{class:"dl lab"},d.text));else b.append(el("p",{class:"dl"+(d.cls?" "+d.cls:"")},el("span",{class:"tx"},d.text),d.note?el("span",{class:"dn"},d.note):null));});
+    if(!any)b.append(el("p",null,"A blank page. Speak with the people in Philadelphia and the first lines of the Preamble will appear here."));
+  } else if(curTab===1){
+    b.append(el("p",{class:"cap"},Object.keys(S.cards).length+" of "+TOTAL+" cards found. Echo cards connect an ideal to today’s law. Ledger cards mark contradictions in 1776. Insight cards record a lawyer’s skill."));
+    [["echo","Echo cards"],["ledger","Ledger cards"],["insight","Insight cards"]].forEach(function(pr){
+      var keys2=Object.keys(CARDS).filter(function(k){return CARDS[k].kind===pr[0];}),got=keys2.filter(function(k){return S.cards[k];}).length;
+      b.append(el("h3",null,pr[1]+" ("+got+"/"+keys2.length+")"));var grid=el("div",{class:"slots"});
+      keys2.forEach(function(k){var c=CARDS[k];
+        if(S.cards[k])grid.append(el("div",{class:"slot got"},sealEl(c.kind),el("div",null,el("b",null,c.title),el("span",{class:"s"},c.sub),el("span",{class:"bl"},c.blurb))));
+        else grid.append(el("div",{class:"slot"},el("span",{class:"seal empty","aria-hidden":"true"},"?"),el("div",null,el("b",null,"Not found yet"),el("span",{class:"s"},pr[0]==="echo"?"Match an ideal to today’s law":pr[0]==="ledger"?"Highlight a contradiction":"Think like a lawyer"))));});
+      b.append(grid);});
+  } else if(curTab===2){
+    var ip=function(k){return S.b[k]&&!S.b[k].done&&S.b[k].text?S.b[k].text+"  (draft in progress)":"";};
+    b.append(el("h3",null,"Preamble analysis"),el("p",null,S.note1||ip("note1")||"Not written yet. Roger Sherman will ask for it."));
+    b.append(el("h3",null,"Charges examined"));
+    var gn=GRIEVANCES.filter(function(g){return S.g[g.id]&&S.g[g.id].done;});
+    if(!gn.length)b.append(el("p",null,"None yet."));
+    gn.forEach(function(g){b.append(el("p",null,el("b",null,g.title+": "),S.g[g.id].note));});
+    GRIEVANCES.forEach(function(g){var t=ip(g.id+".n");if(t&&!(S.g[g.id]&&S.g[g.id].done))b.append(el("p",null,el("b",null,g.title+": "),t));});
+    b.append(el("h3",null,"Final reflection"),el("p",null,S.refl||ip("refl")||"Not written yet. The monument in the Hall of Echoes will ask for it."));
+  } else if(curTab===4){
+    b.append(el("h3",null,"Controls"));
+    ["Move: W A S D. Jump: Space. Sprint: hold Shift.","Look around: drag with the mouse, or use the arrow keys. Scroll to zoom.","Talk or read: E or Enter near a person, scroll, or monument. Satchel: Esc.","On a touch screen: the arrows move, the round buttons jump and talk, and you drag the screen to look.","Blue-gold beams mark charge scrolls. Golden diamonds mark who to talk to next. Gold quills are worth 10 points each."].forEach(function(t){b.append(el("p",null,t));});
+    b.append(el("h3",null,"Platforming assist"));
+    b.append(el("p",null,"Turn this on to read charge scrolls from the ground. You can still climb for the quills."));
+    var tg=el("button",{class:"go",type:"button","aria-pressed":S.assist?"true":"false",onclick:function(){S.assist=!S.assist;save();drawTabs();}},S.assist?"Platforming assist: ON":"Platforming assist: OFF");
+    b.append(el("div",{class:"row"},tg));
+  } else {
+    var txt=caseText(),ta=el("textarea",{rows:"14",readonly:true,"aria-label":"Case file text"});ta.value=txt;
+    var cb=el("button",{class:"go",type:"button",onclick:function(){downloadCertificate();}},"Download certificate (PDF)");
+    if(!S.done){cb.disabled=true;cb.title="Unlocks when you finish the final reflection";}
+    b.append(el("h3",null,"Completion certificate"));
+    b.append(el("p",null,S.done?"Your certificate is a PDF with a completion page and all of your written analysis, formatted to attach to a Google Classroom assignment.":"Your certificate unlocks when you finish the final reflection. It will be a PDF with a completion page and all of your written analysis, ready to attach to a Google Classroom assignment."));
+    b.append(el("div",{class:"row"},cb));
+    b.append(el("h3",null,"Or copy your work as text"),el("p",{class:"cap"},"Copy this and paste it into a Google Doc or your assignment. It updates as you play."),ta);
+    var rowb=[copyBtn(ta,txt)];if($("dlg").hidden)rowb.push(el("button",{class:"go",type:"button",onclick:function(){closeMenu();askReset();}},"Start over"));
+    b.append(el("div",{class:"row"},rowb));
+  }
+}
+function askReset(){
+  openDlg([{k:"n",t:"Clear all points, cards, and notes on this device and start over from the beginning? Copy your case file first if you need it.",btns:[
+    {label:"Keep playing",fn:function(){closeDlg();}},
+    {label:"Clear and start over",fn:function(){S=fresh();save();location.reload();}}]}]);
+}
+function openFinale(){
+  setTimeout(function(){
+    $("mbody").replaceChildren();curTab=3;openMenu();toast("Case file complete");
+  },200);
+}
+$("bBinder").addEventListener("click",function(){if(!modal||($("menu").hidden&&!$("dlg").hidden)){curTab=1;openMenu();this.blur();}});
+$("mClose").addEventListener("click",closeMenu);
+
+/* ============ COMPLETION CERTIFICATE (PDF for Google Classroom) ============ */
+var PDF_OK={8216:1,8217:1,8220:1,8221:1,8211:1,8212:1,8230:1,8226:1,8482:1,8364:1};
+function pdfSafe(s){
+  s=String(s==null?"":s).replace(/\r/g,"").replace(/\u2212/g,"-").replace(/[\u00AD\u200B-\u200F\uFEFF]/g,"");
+  var out="";
+  for(var i=0;i<s.length;i++){var c=s.charAt(i),k=s.charCodeAt(i);
+    if(c==="\n"||(k>=32&&k<=126)||(k>=160&&k<=255)||PDF_OK[k])out+=c;
+    else if(k===9)out+="    ";
+    else if(k>=0xD800&&k<=0xDFFF){continue;}
+    else if(k<32){continue;}
+    else out+="?";}
+  return out;
+}
+function certCode(){
+  var gs=Object.keys(S.g||{}).sort().map(function(k){return k+":"+((S.g[k]||{}).note||"");}).join("~");
+  var str=[S.name,S.pts,S.note1,S.refl,gs,Object.keys(S.cards||{}).length].join("|"),h=2166136261;
+  for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  var x=("00000000"+h.toString(16)).slice(-8).toUpperCase();return "CF-"+x.slice(0,4)+"-"+x.slice(4);
+}
+function certDate(){
+  var d=S.completedOn?new Date(S.completedOn):new Date();
+  try{return d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});}catch(e){return d.toDateString();}
+}
+function buildCertificate(){
+  var J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+  var doc=new J({orientation:"landscape",unit:"pt",format:"letter"});
+  var name=pdfSafe(S.name||"Student"),code=certCode(),dateStr=certDate();
+  var NAVY=[27,44,92],GOLD=[190,150,60],INK=[34,32,30],GREY=[110,108,104];
+  function cs(n){if(doc.setCharSpace)doc.setCharSpace(n);}
+  function centerFit(text,x,y,max,size,style){doc.setFont("times",style);doc.setFontSize(size);while(doc.getTextWidth(text)>max&&size>14){size-=1;doc.setFontSize(size);}doc.text(text,x,y,{align:"center"});}
+  /* ---- certificate page (landscape) ---- */
+  doc.setFillColor(251,247,234);doc.rect(0,0,792,612,"F");
+  doc.setDrawColor(NAVY[0],NAVY[1],NAVY[2]);doc.setLineWidth(3);doc.rect(26,26,740,560);
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(1);doc.rect(36,36,720,540);
+  doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);[[36,36],[756,36],[36,576],[756,576]].forEach(function(p){doc.rect(p[0]-5,p[1]-5,10,10,"F");});
+  doc.setTextColor(120,96,40);doc.setFont("times","bold");doc.setFontSize(13);cs(4);doc.text("THE COMMITTEE OF FIVE",396,84,{align:"center"});cs(0);
+  doc.setTextColor(NAVY[0],NAVY[1],NAVY[2]);centerFit("Certificate of Completion",396,138,640,44,"bold");
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(1.2);doc.line(236,160,380,160);doc.line(412,160,556,160);
+  doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);doc.lines([[8,8],[-8,8],[-8,-8],[8,-8]],396,152,[1,1],"F",true);
+  doc.setTextColor(INK[0],INK[1],INK[2]);doc.setFont("times","italic");doc.setFontSize(17);doc.text("This certifies that",396,196,{align:"center"});
+  doc.setTextColor(NAVY[0],NAVY[1],NAVY[2]);centerFit(name,396,246,560,38,"italic");
+  doc.setDrawColor(INK[0],INK[1],INK[2]);doc.setLineWidth(.7);doc.line(176,258,616,258);
+  var nCharges=GRIEVANCES.filter(function(g){return S.g[g.id]&&S.g[g.id].done;}).length;
+  var body="has completed the Declaration of Independence analysis and reflection: examining the Preamble, "+nCharges+" of the charges against King George III, and the places where the Declaration's ideals contradicted the society of 1776, and comparing them to the law today.";
+  doc.setTextColor(INK[0],INK[1],INK[2]);doc.setFont("times","normal");doc.setFontSize(14.5);
+  doc.splitTextToSize(pdfSafe(body),560).forEach(function(l,i){doc.text(l,396,292+i*20,{align:"center"});});
+  var ledN=Object.keys(S.cards||{}).filter(function(k){return CARDS[k].kind==="ledger";}).length;
+  var stats=[[String(S.pts||0),"POINTS"],[Object.keys(S.cards||{}).length+"/"+TOTAL,"CARDS COLLECTED"],[String(ledN),"CONTRADICTIONS"],[String(nCharges),"CHARGES EXAMINED"]];
+  var N=stats.length,bw=140,gap=16,x0=396-(N*bw+(N-1)*gap)/2;
+  stats.forEach(function(st,i){var x=x0+i*(bw+gap);doc.setFillColor(255,255,255);doc.setDrawColor(NAVY[0],NAVY[1],NAVY[2]);doc.setLineWidth(1);doc.rect(x,378,bw,58,"FD");
+    doc.setTextColor(NAVY[0],NAVY[1],NAVY[2]);doc.setFont("times","bold");doc.setFontSize(23);doc.text(st[0],x+bw/2,408,{align:"center"});
+    doc.setTextColor(GREY[0],GREY[1],GREY[2]);doc.setFont("times","bold");doc.setFontSize(7.5);cs(1);doc.text(st[1],x+bw/2,425,{align:"center"});cs(0);});
+  /* seal */
+  doc.setFillColor(212,168,67);doc.circle(396,512,38,"F");doc.setDrawColor(255,244,205);doc.setLineWidth(1.4);doc.circle(396,512,31,"S");
+  var pts=[];for(var i=0;i<10;i++){var r=i%2?7:17,a=-Math.PI/2+i*Math.PI/5;pts.push([396+Math.cos(a)*r,512+Math.sin(a)*r]);}
+  doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);doc.lines(pts.slice(1).map(function(p,i){var q=i===0?pts[0]:pts[i];return[p[0]-q[0],p[1]-q[1]];}),pts[0][0],pts[0][1],[1,1],"F",true);
+  /* date and signature lines */
+  doc.setDrawColor(INK[0],INK[1],INK[2]);doc.setLineWidth(.7);doc.line(86,530,296,530);doc.line(496,530,706,530);
+  doc.setTextColor(INK[0],INK[1],INK[2]);doc.setFont("times","normal");doc.setFontSize(13);doc.text(pdfSafe(dateStr),191,524,{align:"center"});
+  doc.setTextColor(GREY[0],GREY[1],GREY[2]);doc.setFontSize(9.5);doc.text("Date completed",191,544,{align:"center"});doc.text("Teacher signature",601,544,{align:"center"});
+  doc.setFontSize(8.5);doc.text("Verification code "+code+"   |   Generated by The Committee of Five",396,566,{align:"center"});
+  /* ---- submission pages (portrait) ---- */
+  doc.addPage("letter","portrait");
+  var W=612,H=792,M=64,TW=W-2*M,y=84;
+  function ensure(h){if(y+h>H-64){doc.addPage("letter","portrait");y=84;}}
+  function setC(c){doc.setTextColor(c[0],c[1],c[2]);}
+  function para(text,o){o=o||{};var size=o.size||11.5,lh=o.lh||size*1.42,ind=o.indent||0;doc.setFont("times",o.style||"normal");doc.setFontSize(size);setC(o.color||INK);
+    var paras=pdfSafe(text).split(/\n+/);paras.forEach(function(p,pi){var lines=doc.splitTextToSize(p===""?" ":p,TW-ind);lines.forEach(function(l){ensure(lh);doc.text(l,M+ind,y);y+=lh;});if(pi<paras.length-1)y+=lh*.35;});}
+  function heading(text,size,color){ensure(size*2.2);doc.setFont("times","bold");doc.setFontSize(size);setC(color||NAVY);doc.text(pdfSafe(text),M,y);y+=size*1.15;}
+  function rule(){doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(1);doc.line(M,y,W-M,y);y+=12;}
+  function missing(){para("(Not written.)",{style:"italic",color:GREY});}
+  doc.setFont("times","bold");doc.setFontSize(23);setC(NAVY);doc.text("The Declaration of Independence",M,y);y+=24;
+  doc.setFont("times","italic");doc.setFontSize(14);setC(INK);doc.text("Analysis of Core Ideas and Reflection",M,y);y+=14;
+  doc.setDrawColor(NAVY[0],NAVY[1],NAVY[2]);doc.setLineWidth(1.6);doc.line(M,y,W-M,y);y+=18;
+  [["Student",name],["Date completed",pdfSafe(dateStr)],["Activity","The Committee of Five: Drafting the Declaration"],["Points / cards",(S.pts||0)+" points, "+Object.keys(S.cards||{}).length+" of "+TOTAL+" cards"],["Completion code",code]].forEach(function(r){
+    doc.setFont("times","bold");doc.setFontSize(11);setC(INK);doc.text(r[0]+":",M,y);doc.setFont("times","normal");doc.text(r[1],M+104,y);y+=16;});
+  y+=6;rule();
+  /* Part 1 */
+  heading("Part 1. Analysis of Core Ideas",16);y+=4;
+  heading("The Preamble",12.5,INK);y+=2;
+  if(S.note1)para(S.note1);else missing();
+  y+=10;heading("The charges I examined",12.5,INK);y+=2;
+  var any=false;
+  GRIEVANCES.forEach(function(g){var gs=S.g[g.id];if(!gs||!gs.done)return;any=true;
+    ensure(104);heading(g.title,11.5,NAVY);y+=1;
+    doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(2);var y0=y-8;
+    para("\u201C"+g.text+"\u201D",{style:"italic",size:10.5,indent:12,color:GREY});doc.line(M+3,y0,M+3,y-10);y+=5;
+    var cd=CARDS[g.check.card];para("Today's safeguard: "+cd.title+" ("+cd.sub+")",{style:"bold",size:10.5});
+    para(gs.note||"(No explanation written.)",{size:11.5});y+=8;});
+  if(!any){missing();}
+  /* Part 2 */
+  y+=6;ensure(80);heading("Part 2. Contradiction Ledger",16);y+=4;
+  para("Places where the ideals of the Declaration contradicted the society of 1776.",{style:"italic",size:11,color:GREY});y+=4;
+  var led=Object.keys(S.cards||{}).filter(function(k){return CARDS[k].kind==="ledger";});
+  if(!led.length)missing();
+  led.forEach(function(k){ensure(60);para(CARDS[k].title,{style:"bold",size:11.5});para(CARDS[k].blurb,{size:10.5,indent:12});y+=5;});
+  /* Part 3 */
+  y+=8;ensure(80);heading("Part 3. Reflection",16);y+=4;
+  para("Is the Declaration of Independence, or isn't it, a reflection of American values?",{style:"italic",size:11,color:GREY});y+=4;
+  if(S.refl)para(S.refl);else missing();
+  /* Evidence */
+  y+=12;ensure(80);heading("Evidence: Echo cards collected",13);y+=2;
+  var ech=Object.keys(S.cards||{}).filter(function(k){return CARDS[k].kind==="echo";});
+  if(!ech.length)missing();
+  if(ech.length)para(ech.map(function(k){return CARDS[k].title;}).join("; ")+".",{size:10.5});
+  var ins=Object.keys(S.cards||{}).filter(function(k){return CARDS[k].kind==="insight";});
+  if(ins.length){y+=8;heading("Insight cards",11.5,INK);para(ins.map(function(k){return CARDS[k].title;}).join("; ")+".",{size:10.5});}
+  /* headers and footers on submission pages */
+  var total=doc.getNumberOfPages();
+  for(var p=2;p<=total;p++){doc.setPage(p);
+    doc.setFont("times","normal");doc.setFontSize(9);setC(GREY);doc.text(name+"   |   The Declaration of Independence: Analysis and Reflection",M,40);
+    doc.setDrawColor(200,196,188);doc.setLineWidth(.6);doc.line(M,48,W-M,48);doc.line(M,H-52,W-M,H-52);
+    doc.text("Completion code "+code,M,H-38);doc.text("Page "+(p-1)+" of "+(total-1),W-M,H-38,{align:"right"});}
+  doc.setProperties({title:"Declaration of Independence: Analysis and Reflection - "+name,subject:"Completion certificate and submission",author:name,creator:"The Committee of Five"});
+  return doc;
+}
+function certFileName(){var n=pdfSafe(S.name||"Student").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"Student";return "Declaration-of-Independence-"+n+".pdf";}
+async function downloadCertificate(){
+  if(!S.done){toast("Finish the final reflection to unlock your certificate.");return;}
+  var doc=null;try{doc=buildCertificate();}catch(e){console.error(e);}
+  if(!doc){toast("The certificate tool could not load. Use Copy case file and paste it into a Google Doc.");return;}
+  var blob=doc.output("blob"),fname=certFileName(),dl=null;
+  try{if(window.claude&&window.claude.use)dl=await window.claude.use("downloads");}catch(e){dl=null;}
+  if(dl){
+    try{await dl.save({filename:fname,data:blob});toast("Certificate saved. Attach it to your Google Classroom assignment.");}
+    catch(e){if(e&&e.code==="declined")toast("Download cancelled.");else toast("Could not save the file. Use Copy case file and paste it into a Google Doc.");}
+    return;
+  }
+  if(!window.claude){try{var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(a.href);},1500);toast("Certificate downloaded.");return;}catch(e){}}
+  toast("Downloads are not available in this view. Use Copy case file and paste it into a Google Doc.");
+}
+
+
+/* ============ BOOT ============ */
+var NOGL=false;
+function begin(){
+  var v=$("nm").value.trim();if(!v){$("nm").focus();return;}
+  if(NOGL)return;
+  S.name=v;if(!S.started){S.started=true;}
+  titleOpen=false;$("title").hidden=true;save();refreshHud();
+  if(!S.seen_intro){S.seen_intro=true;save();
+    openDlg([
+      N("Philadelphia, June 1776. The Second Continental Congress is meeting in the Pennsylvania State House, and a decision is coming that cannot be taken back."),
+      N("You are a young clerk assigned to the Committee of Five, the men Congress has chosen to explain independence in writing. Explore the city, speak with the people involved, and test their words against the law. The quotes you read are real. The world is built from blocks, the map is stylized, and the narration is the game’s own."),
+      N("Move with W A S D, jump with Space, and hold Shift to sprint. Drag the mouse to look around. Press E near a person to talk. Press Esc to open your satchel. Golden diamonds mark who to talk to next, and the arrow at the top points the way.")]);
+  }
+}
+$("begin").addEventListener("click",begin);
+$("nm").addEventListener("keydown",function(e){if(e.key==="Enter")begin();});
+$("reset").addEventListener("click",function(){S=fresh();save();location.reload();});
+if(S.started){$("nm").value=S.name;$("begin").textContent="Continue";$("reset").hidden=false;}
+genWorld();updateGate();
+try{setupScene();}
+catch(err){NOGL=true;var bx=document.querySelector("#title .box");bx.append(el("p",{class:"small"},"This version needs 3D graphics (WebGL), and your browser could not start them. Try another browser, or play the 2D walkable version instead."));$("begin").disabled=true;}
+refreshHud();
+if(!NOGL){
+  COINS.forEach(function(c){c.got=!!S.coins[c.id];});
+  player.x=S.x;player.y=S.y;player.z=S.z;player.face=S.face||0;
+  if(location.hash==="#debug")window.__COF={S:S,player:player,COURSES:COURSES,MPS:MPS,cam:cam,NPCS:NPCS,PED3:PED3,COINS:COINS,solidAt:solidAt,stepPhysics:stepPhysics,keys:keys,getV:getV,collides:collides,B:B,vox:vox,interact:interact,nearest:nearest,jump:function(){jumpBuf=.14;},mesh:function(){return worldMesh;},placeCamera:placeCamera,camera:function(){return camera;},camBlocked:camBlocked,buildCertificate:buildCertificate,downloadCertificate:downloadCertificate};
+  requestAnimationFrame(frame);
+}
+})();
+</script>
+</body>
+</html>
