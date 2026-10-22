@@ -4,51 +4,95 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>The Committee of Five: Drafting the Declaration of Independence</title>
+<title>The Declaration of Independence: Analysis and Reflection</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E">
 <style>
-:root{--bg:#f3f1ea;--ink:#1c2233;--muted:#586075;--card:#ffffff;--line:#d5d1c4;--accent:#1d3157;--on:#ffffff;--gold:#8a6616}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--ink:#e8e5db;--muted:#a2a9ba;--card:#171c27;--line:#303a4c;--accent:#9db8ea;--on:#10141c;--gold:#e0b556}}
+:root{--bg:#f3f1ea;--ink:#1c2233;--muted:#4f576b;--card:#ffffff;--line:#d5d1c4;--accent:#1d3157;--on:#ffffff;--gold:#8a6616;--note:#eef2fa;--noteline:#b9c6e3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--ink:#e8e5db;--muted:#a9b0c0;--card:#171c27;--line:#303a4c;--accent:#9db8ea;--on:#10141c;--gold:#e0b556;--note:#141c2e;--noteline:#34466b}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Georgia,"Times New Roman",serif}
-main{max-width:860px;margin:0 auto;padding:48px 20px 72px}
-h1{font-size:clamp(2rem,6vw,3rem);line-height:1.1;margin:0 0 12px}
-.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:32px 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
-.card h2{margin:0 0 6px;font-size:1.4rem}
-.card p{margin:0 0 14px;color:var(--muted);font-size:.98rem}
-a.btn{display:inline-block;background:var(--accent);color:var(--on);text-decoration:none;font-family:system-ui,sans-serif;font-weight:600;padding:10px 20px;border-radius:8px}
-a.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-h3{font-size:1.1rem;margin:28px 0 6px}
-ul{margin:0;padding-left:1.2em;color:var(--muted)}
+main{max-width:920px;margin:0 auto;padding:44px 20px 72px}
+h1{font-size:clamp(1.9rem,5.5vw,2.8rem);line-height:1.12;margin:0 0 12px}
+h2{font-size:1.45rem;margin:40px 0 10px}
+h3{font-size:1.2rem;margin:0 0 6px}
+.lede{font-size:1.15rem;max-width:62ch;margin:0 0 6px}
+.pick{display:inline-block;margin:10px 0 0;padding:6px 14px;border:2px solid var(--accent);border-radius:999px;font-family:system-ui,sans-serif;font-weight:700;font-size:.95rem;color:var(--accent)}
+.same{background:var(--note);border:1px solid var(--noteline);border-radius:12px;padding:16px 22px;margin:22px 0 0}
+.same p{margin:0 0 6px;font-family:system-ui,sans-serif;font-weight:600}
+.same ul{margin:0;padding-left:1.2em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:12px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column}
+.card p{margin:0 0 12px;color:var(--muted);font-size:.97rem}
+.card .good{font-size:.92rem}
+.card .good b{color:var(--ink);font-family:system-ui,sans-serif}
+.card .submit{margin-top:auto;padding-top:10px;font-size:.92rem;color:var(--ink)}
+a.btn{display:inline-block;background:var(--accent);color:var(--on);text-decoration:none;font-family:system-ui,sans-serif;font-weight:600;padding:11px 20px;border-radius:8px;margin:6px 0 12px;align-self:stretch;text-align:center}
+a.btn:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+ol,ul.tips{margin:0;padding-left:1.3em}
+li{margin:0 0 6px}
 .small{font-size:.9rem;color:var(--muted)}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
-  <h1>The Committee of Five</h1>
-  <p class="lede">A history and law game about the writing of the Declaration of Independence. Students walk through Philadelphia in 1776, hear the people who were there in their own words, match each ideal to today’s law, and catch where the ideals contradicted the society of the time.</p>
+  <h1>The Declaration of Independence: Analysis and Reflection</h1>
+  <p class="lede">You will show what you understand about the Declaration of Independence and how it compares to our legal system today. There are three ways to do it.</p>
+  <span class="pick">Choose ONE option below. You do not need to do more than one.</span>
+
+  <div class="same">
+    <p>Every option asks for the same thinking:</p>
+    <ul>
+      <li>An analysis of the <b>Preamble</b>: its core values and how it justifies independence.</li>
+      <li>An analysis of <b>three to five charges</b> against King George III: explain how you see each one addressed in our society today, or how the colonists’ experience influenced it. (In the games you must examine at least three. More is fine but not required.)</li>
+      <li>A <b>reflection</b> (one to two paragraphs) on whether the Declaration is, or isn’t, a reflection of American values. Include quotes, name the core values you see and how they show up in America and our legal system today, and name where the document contradicts the society of its time or ours.</li>
+    </ul>
+  </div>
+
+  <p class="small" style="margin-top:14px">Want to read the whole Declaration first? <a href="https://www.archives.gov/founding-docs/declaration-transcript" target="_blank" rel="noopener">Read the transcript at the National Archives</a> or <a href="https://www.youtube.com/watch?v=EW-B6aEGW48" target="_blank" rel="noopener">watch the video overview</a>. Both options use the same sources.</p>
+
+  <h2>Pick your option</h2>
   <div class="grid">
-    <section class="card">
-      <h2>Blocky 3D platformer</h2>
-      <p>Explore a block-built Philadelphia in 3D. Jump, climb parkour trials to reach the charge scrolls, and collect quills. Needs a computer or tablet that supports WebGL.</p>
-      <a class="btn" href="blocky-3d/">Play the 3D version</a>
+    <section class="card" aria-labelledby="o1">
+      <h3 id="o1">Option 1: 3D block-world game</h3>
+      <p>Explore a block-built Philadelphia in 1776. Talk to the people who were there, climb parkour trials to reach the charge scrolls, and collect quills.</p>
+      <p class="good"><b>Choose this if</b> you like games and have a laptop or computer. It is the most demanding option for your device.</p>
+      <a class="btn" href="blocky-3d/">Play the 3D game</a>
+      <p class="submit"><b>You submit:</b> the PDF certificate the game gives you at the end.</p>
     </section>
-    <section class="card">
-      <h2>Walkable pixel-art world</h2>
-      <p>A top-down, HD-2D style Philadelphia. Walk around, talk to the people involved, and collect cards. Runs on almost any device, including phones.</p>
-      <a class="btn" href="pixel-art/">Play the pixel-art version</a>
+    <section class="card" aria-labelledby="o2">
+      <h3 id="o2">Option 2: Pixel-art game</h3>
+      <p>Walk a top-down, pixel-art Philadelphia. Talk to the people involved, answer their questions, and collect cards. It runs on almost any device, including phones.</p>
+      <p class="good"><b>Choose this if</b> you like games but have a slower device, or you want something without jumping.</p>
+      <a class="btn" href="pixel-art/">Play the pixel-art game</a>
+      <p class="submit"><b>You submit:</b> the PDF certificate the game gives you at the end.</p>
+    </section>
+    <section class="card" aria-labelledby="o3">
+      <h3 id="o3">Option 3: Written assignment</h3>
+      <p>Watch the video overview, read the primary source, and write your analysis and reflection straight into the Word document. No game needed.</p>
+      <p class="good"><b>Choose this if</b> you would rather read and write in a document, or you can’t use a game on your device.</p>
+      <a class="btn" href="text-assignment/Primary%20Source_%20Decleration%20of%20Independence.docx">Download the written assignment</a>
+      <p class="submit"><b>You submit:</b> your completed document. It opens in Word or Google Docs.</p>
     </section>
   </div>
-  <h3>For teachers</h3>
-  <ul>
-    <li>Both versions replace the written Declaration assignment: the Preamble analysis, an analysis of at least three charges, the contradiction ledger, and a final reflection.</li>
-    <li>At the end students download a PDF completion certificate with all of their writing, ready to attach in Google Classroom.</li>
-    <li>Progress is saved in each student’s own browser on their own device. Nothing is sent to a server.</li>
-    <li>Quotes are real and labeled as primary or retrospective sources. The map is stylized and not to scale, and the narration is the game’s own.</li>
+
+  <h2>How to turn it in</h2>
+  <ol>
+    <li>Choose one option and finish it.</li>
+    <li><b>If you played a game:</b> after the final reflection at the end, press <b>Esc</b> (or tap the Satchel button) and open the <b>Case file</b> tab. Choose <b>Download certificate (PDF)</b>. That PDF has all of your writing in it.</li>
+    <li><b>If you chose the written assignment:</b> complete the document (open it in Google Docs or Word) and save it.</li>
+    <li>Attach your file to the assignment in <b>Google Classroom</b> and turn it in.</li>
+  </ol>
+
+  <h2>Before you start</h2>
+  <ul class="tips">
+    <li><b>Stay on one device and one browser.</b> A game saves your progress in the browser you are using. If you switch devices or clear your browsing data, you will start over.</li>
+    <li><b>Wait until you are finished to download.</b> The certificate unlocks only after you complete the final reflection.</li>
+    <li><b>Games are not a race.</b> Read the sources. They are real quotes, and each one is labeled so you can judge how reliable it is.</li>
+    <li><b>Platforming too hard in the 3D game?</b> Press Esc, open the <b>Play</b> tab, and turn on Platforming assist. Or switch to Option 2.</li>
+    <li><b>Wrong choice?</b> You can switch. Each game has a link back to this page on its first screen.</li>
   </ul>
-  <p class="small">Built with three.js and jsPDF (MIT licensed), included in the lib folder.</p>
+  <p class="small">Nothing you type is sent to a server. Your work stays on your device until you attach it in Google Classroom.</p>
 </main>
 </body>
 </html>
