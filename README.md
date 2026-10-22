@@ -4,8 +4,8 @@ Students **choose one** of three ways to complete this assignment. All three ask
 
 | Option | What it is | Students submit |
 |---|---|---|
-| 1. 3D block-world game (`blocky-3d/`) | Explore a block-built Philadelphia, climb parkour trials, talk to the people involved. Needs WebGL. | PDF certificate from the game |
-| 2. Pixel-art game (`pixel-art/`) | A walkable, top-down Philadelphia. Runs on almost any device, including phones. | PDF certificate from the game |
+| 1. 3D block-world game (`blocky-3d/`) | Explore a block-built Philadelphia, climb parkour trials, talk to the people involved. Needs WebGL. | Essay PDF from the game |
+| 2. Pixel-art game (`pixel-art/`) | A walkable, top-down Philadelphia. Runs on almost any device, including phones. | Essay PDF from the game |
 | 3. Written assignment (`text-assignment/`) | The Word document: watch the video overview, read the primary source, and write the analysis and reflection. | The completed document |
 
 Students start at the landing page, `index.html`. It explains the three options, what each one asks for, how to choose, and how to turn the work in.
@@ -16,7 +16,7 @@ Students start at the landing page, `index.html`. It explains the three options,
 2. **Analysis of 3 to 5 charges** against King George III: how each is addressed in our society today, or how the colonists’ experience influenced it.
 3. **Reflection (1 to 2 paragraphs)** on whether the Declaration is, or isn’t, a reflection of American values, with quotes, the core values and how they show up today (especially in the legal system), and the contradictions with the society of its time or ours.
 
-In the games the same writing happens inside the story: a Preamble note (30+ words), a short explanation for each charge (10+ words, at least three charges), and a final reflection (100+ words). The completion certificate gathers all of it into one PDF, along with the contradiction ledger and the evidence cards the student collected. The games let a student examine more than five charges. Only three are required.
+In the games the same writing happens inside the story: a Preamble note (30+ words), a short explanation for each charge (10+ words, at least three charges), and a final reflection (100+ words). At the end the game builds an essay PDF from those answers: the student’s name and date, a title, the Preamble analysis, each charge with its quoted text and the student’s explanation, and the reflection, with a one-line game record and completion code at the bottom. The games let a student examine more than five charges. Only three are required.
 
 ## Folder layout
 
@@ -48,7 +48,7 @@ To test locally, run `python3 -m http.server 8000` in the repository folder and 
 ## Notes for teachers
 
 - **Saving.** Each game stores progress in the student’s own browser (localStorage), separately per game. It is not shared between devices, and nothing is sent to a server.
-- **The certificate.** It unlocks only after the final reflection. It is a landscape certificate page followed by the formatted submission pages, built in the browser and saved with a normal download. It includes a verification code computed from the student’s work, so you can see it matches the writing in the file. It is not a security feature.
+- **The essay PDF.** It unlocks only after the final reflection. It is formatted like an essay (Times 12 point, 1.5 line spacing, indented paragraphs, a running head with the student’s name and page number) and is built in the browser and saved with a normal download. The completion code at the bottom is computed from the student’s work, so you can see it matches the writing in the file. It is not a security feature.
 - **Special characters.** Emoji and non-Latin scripts in a student’s writing are dropped or shown as "?" in the PDF. The game’s "Copy case file" option keeps everything as plain text.
 - **Platforming.** In the 3D game, Esc then **Play** has a Platforming assist switch that lets a student read the charge scrolls from the ground.
 - **Sources.** Quotes in the games are real and labeled primary or retrospective. The map is stylized, and the narration is the game’s own. The games were created by Claude with prompting and iteration.
