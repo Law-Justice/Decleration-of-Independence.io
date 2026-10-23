@@ -8,7 +8,7 @@
 <title>The Committee of Five: Philadelphia, 1776</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <script src="../lib/jspdf.umd.min.js"></script>
 <script>window.jspdf||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');</script>
 <style>
@@ -18,9 +18,14 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
   --page:#dde2ea; --page-ink:#1a2133;
   --win1:#1c2c5c; --win2:#0c1530; --win-line:#efe9d6; --win-glow:rgba(120,150,230,.38);
-  --gold:#f0cc72; --ink:#f4f0e4; --muted:#b7bfd6; --ok:#7fe0aa; --bad:#ff8c98; --info:#9cc4ff;
-  --pix:"Pixelify Sans","Trebuchet MS",system-ui,sans-serif;
+  --paper:#efe3c4; --edge:#6b4a22; --brass:#b88a2e; --wax:#9b2a1c;
+  --gold:#8a2b1b; --ink:#2a1c0e; --muted:#6b5535; --ok:#2f6a35; --bad:#8f2020; --info:#24497a;
+  --pix:"IM Fell English","Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sc:"IM Fell English SC","IM Fell English",Georgia,serif;
   --serif:"IM Fell English","Iowan Old Style",Georgia,serif;
+  --read:"EB Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 0 0 0 .17 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-d:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .38 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){ --page:#06080d; --page-ink:#e8e5db; color-scheme:dark; }
@@ -39,109 +44,133 @@ button,textarea,input{font:inherit;color:inherit}
 #stage{position:relative;width:min(100%,calc((100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.7778));aspect-ratio:16/9;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(0,0,0,.5)}
 @supports (height:100dvh){#stage{width:min(100%,calc((100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.7778))}}
 #stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
-#stage canvas#game{image-rendering:pixelated}
-#dof{filter:blur(var(--b1,3px));-webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.6) 14%,transparent 34%,transparent 66%,rgba(0,0,0,.7) 86%,#000 100%);mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.6) 14%,transparent 34%,transparent 66%,rgba(0,0,0,.7) 86%,#000 100%)}
-#bloom{filter:contrast(1.7) brightness(.85) saturate(1.4) blur(var(--b2,8px));mix-blend-mode:screen;opacity:.5}
-#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 52%,rgba(8,10,28,.55) 100%)}
+#stage canvas#game{image-rendering:pixelated;filter:saturate(.86) contrast(1.12)}
+#dof{filter:blur(var(--b1,1px));-webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.35) 4%,transparent 11%,transparent 91%,rgba(0,0,0,.3) 96%,#000 100%);mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.35) 4%,transparent 11%,transparent 91%,rgba(0,0,0,.3) 96%,#000 100%)}
+#bloom{filter:contrast(2.1) brightness(.8) saturate(1.1) blur(var(--b2,3px));mix-blend-mode:screen;opacity:.12}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 52%,transparent 46%,rgba(3,5,14,.66) 100%)}
 
 /* HUD */
 #hud{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);display:flex;justify-content:space-between;gap:10px;padding:10px 12px;z-index:20;pointer-events:none}
-.win{background:linear-gradient(180deg,var(--win1),var(--win2));border:2px solid var(--win-line);border-radius:10px;box-shadow:0 0 0 2px #0a1128,inset 0 0 0 2px var(--win-glow),0 10px 34px rgba(0,0,0,.55);color:var(--ink)}
-#obj{max-width:min(420px,60vw);padding:8px 14px;pointer-events:auto}
-#obj b{display:block;color:var(--gold);font-size:.8rem;font-weight:600;margin-bottom:2px}
-#obj span{font-size:.92rem;line-height:1.35;display:block}
+.win{background:var(--grain),radial-gradient(ellipse at 18% 12%,rgba(255,251,235,.78),transparent 58%),radial-gradient(ellipse at 88% 92%,rgba(150,105,45,.3),transparent 55%),linear-gradient(180deg,#f1e5c8,#e2d0a2);border:2px solid var(--edge);border-radius:3px 7px 4px 8px/7px 3px 8px 4px;box-shadow:inset 0 0 0 1px rgba(255,248,225,.65),inset 0 0 26px rgba(122,84,30,.4),0 6px 18px rgba(20,10,0,.55);color:var(--ink)}
+b,strong{font-weight:400;font-family:var(--sc);letter-spacing:.03em}
+#obj{max-width:min(430px,60vw);padding:8px 16px 9px;pointer-events:auto}
+#obj b{display:block;color:var(--gold);font-size:.95rem;margin-bottom:1px}
+#obj span{font-family:var(--read);font-size:1.1rem;line-height:1.35;display:block}
 #hr{display:flex;gap:8px;align-items:flex-start;pointer-events:auto}
-.pill{padding:6px 12px;font-size:.85rem;white-space:nowrap}
+.pill{padding:5px 14px;font-size:1rem;white-space:nowrap}
 button.pill{cursor:pointer}
-button.pill:hover{border-color:var(--gold)}
-#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:20;padding:6px 16px;font-size:.9rem;pointer-events:none}
+#bBinder{background:var(--grain-d),radial-gradient(ellipse at 30% 10%,rgba(255,205,130,.22),transparent 60%),linear-gradient(180deg,#6d4726,#46290f);border:2px solid #24140a;border-radius:6px 6px 10px 10px;color:#f4e5bd;outline:1.5px dashed rgba(216,184,120,.8);outline-offset:-5px;box-shadow:0 3px 8px rgba(0,0,0,.55),inset 0 0 14px rgba(0,0,0,.4)}
+#bBinder::before{content:"";display:inline-block;width:.62em;height:.62em;margin-right:.5em;background:linear-gradient(135deg,#e0b455,#9c7424);border:1px solid #5b4010;border-radius:2px;vertical-align:-.02em}
+button.pill:hover{filter:brightness(1.1)}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:20;padding:5px 18px;font-size:1.02rem;pointer-events:none}
 
-/* dialog */
-#dlg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(940px,calc(100vw - 20px));max-height:min(64vh,540px);z-index:30;display:flex;flex-direction:column;padding:26px 22px 16px}
-#dName{position:absolute;left:18px;top:-17px;padding:4px 16px;font-weight:700;font-size:1rem;background:linear-gradient(180deg,#2a3f7a,#14224a);border:2px solid var(--win-line);border-radius:8px;color:var(--gold)}
+/* dialog: a letter written in ink on aged paper, sealed in wax */
+#dlg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(940px,calc(100vw - 20px));max-height:min(64vh,540px);z-index:30;display:flex;flex-direction:column;padding:28px 24px 18px}
+#dlg::after{content:"";position:absolute;left:18px;bottom:12px;width:34px;height:34px;border-radius:50% 46% 52% 48%;background:radial-gradient(circle at 36% 30%,#cf4a33,#8e2415 55%,#5a130a);box-shadow:inset 0 0 0 4px rgba(0,0,0,.14),inset 0 0 0 7px rgba(255,235,200,.08),0 3px 6px rgba(0,0,0,.55);pointer-events:none}
+#dName{position:absolute;left:20px;top:-18px;padding:4px 18px;font-family:var(--sc);font-size:1.1rem;letter-spacing:.04em;background:var(--grain-d),linear-gradient(180deg,#6d4726,#46290f);border:2px solid #24140a;border-radius:3px;color:#f4e5bd;outline:1px dashed rgba(216,184,120,.85);outline-offset:-4px;box-shadow:0 2px 5px rgba(0,0,0,.5)}
 #dName:empty{display:none}
-#dTag{position:absolute;right:18px;top:-14px;padding:3px 12px;font-size:.78rem;font-weight:600;border-radius:999px;border:2px solid;background:#0c1530}
+#dTag{position:absolute;right:20px;top:-14px;padding:2px 12px;font-family:var(--sc);font-size:.9rem;border-radius:2px;border:1.5px solid;background:#f3e8cb;box-shadow:0 2px 4px rgba(0,0,0,.35)}
 #dTag.prim{color:var(--ok);border-color:var(--ok)}
 #dTag.retro{color:var(--info);border-color:var(--info)}
-#dBody{overflow:auto;font-size:clamp(15px,2.1vw,20px);line-height:1.55;padding-right:4px}
+#dBody{overflow:auto;font-family:var(--read);font-size:clamp(17px,2.4vw,23px);line-height:1.5;padding-right:6px}
 #dBody p{margin:0 0 .7em}
-.narr{color:#dfe6fb;font-style:normal}
-.quote{font-family:var(--serif);font-size:1.18em;line-height:1.5}
-.cap{color:var(--muted);font-size:.82em}
+.narr{color:#35230f;font-style:normal}
+.quote{font-family:var(--read);font-size:1.12em;line-height:1.5;color:#22150a;border-left:3px solid rgba(120,85,40,.45);padding-left:12px}
+.cap{color:var(--muted);font-size:.86em}
+ul.refl{margin:0 0 .8em;padding-left:1.2em}
+ul.refl li{margin-bottom:.4em}
+.later{padding:7px 18px;border-radius:3px 7px 4px 6px;border:2px solid var(--edge);background:rgba(255,250,232,.5);color:var(--ink);font-family:var(--sc);font-size:1.02em;cursor:pointer}
+.later:hover{border-color:var(--gold);color:var(--gold)}
+.opt.chg{display:flex;flex-direction:column;gap:2px;padding:9px 14px}
+.opt.chg .cap{font-family:var(--read);font-size:.88em}
+.opt.sel{border-color:var(--gold);border-left-color:var(--gold);background:rgba(155,42,28,.12)}
+.opt.used{opacity:.5;cursor:default}
+.chgtag{font-size:.8em;color:var(--info)}
 #dBody ol{margin:0 0 .8em;padding-left:1.4em}#dBody li{margin-bottom:.4em}
 .lens{color:var(--info)}
-.passage{font-family:var(--serif);font-size:1.3em;line-height:2;margin:6px 0 12px;padding:10px 14px;background:rgba(0,0,0,.28);border-radius:8px}
-#dFoot{display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:8px;min-height:42px}
-.go{padding:8px 22px;border-radius:8px;border:2px solid var(--gold);background:linear-gradient(180deg,#46591f,#2d3b12);background:linear-gradient(180deg,#2a3f7a,#18285a);color:var(--gold);font-weight:700;cursor:pointer}
-.go:disabled{opacity:.45;cursor:not-allowed}
-.go:hover:not(:disabled){filter:brightness(1.2)}
-.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 14px;border-radius:8px;border:2px solid rgba(239,233,214,.35);background:rgba(0,0,0,.25);cursor:pointer}
-.opt:hover:not([aria-disabled="true"]),.opt:focus-visible{border-color:var(--gold);background:rgba(240,204,114,.12)}
+.passage{font-family:var(--read);font-size:1.3em;line-height:2;margin:6px 0 12px;padding:10px 14px;background:rgba(120,85,40,.12);border-left:4px solid var(--edge);border-radius:2px}
+#dFoot{display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:8px;min-height:44px}
+.go{padding:8px 24px;border-radius:24px 20px 25px 21px/21px 25px 20px 24px;border:2px solid #4a0f08;background:radial-gradient(ellipse at 30% 25%,#d1503a,#9b2a1c 55%,#681609);color:#f9ebcb;font-family:var(--sc);font-size:1.08em;letter-spacing:.04em;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 0 #3a0a04,0 4px 8px rgba(0,0,0,.4)}
+.go:disabled{opacity:.5;filter:grayscale(.45);cursor:not-allowed}
+.go:hover:not(:disabled){filter:brightness(1.12)}
+.opt,.earned,.fb,.bank button{font-family:var(--read);font-size:1.02em}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 14px;border-radius:3px 6px 3px 6px;border:1.5px solid rgba(90,60,25,.6);border-left:5px solid var(--edge);background:rgba(255,251,238,.5);color:var(--ink);cursor:pointer}
+.opt:hover:not([aria-disabled="true"]),.opt:focus-visible{border-color:var(--gold);border-left-color:var(--gold);background:rgba(255,246,220,.85)}
 .opt[aria-disabled="true"]{cursor:default}
-.opt.wrong{border-color:var(--bad);background:rgba(255,140,152,.14)}
-.opt.right{border-color:var(--ok);background:rgba(127,224,170,.16)}
-.fb p{padding:8px 12px;border-radius:8px;font-size:.92em;margin:0 0 6px}
-.fb .no{background:rgba(255,140,152,.14);border-left:4px solid var(--bad)}
-.fb .yes{background:rgba(127,224,170,.14);border-left:4px solid var(--ok)}
-.fb .miss{background:rgba(255,255,255,.07);border-left:4px dashed var(--bad)}
-.earned{display:flex;gap:12px;align-items:center;margin-top:6px;padding:8px 12px;border:2px solid var(--gold);border-radius:8px;background:rgba(240,204,114,.1)}
-.seal{flex:none;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:1.1rem;font-weight:700;border:2px solid}
-.seal.echo{color:var(--gold);border-color:var(--gold);background:rgba(240,204,114,.12)}
-.seal.ledger{color:var(--bad);border-color:var(--bad);background:rgba(255,140,152,.12)}
-.seal.insight{color:var(--info);border-color:var(--info);background:rgba(156,196,255,.12)}
-.seal.empty{color:var(--muted);border:2px dashed #55618a}
+.opt.wrong{border-color:var(--bad);border-left-color:var(--bad);background:rgba(160,40,40,.13)}
+.opt.right{border-color:var(--ok);border-left-color:var(--ok);background:rgba(50,110,55,.16)}
+.fb p{padding:8px 12px;border-radius:2px;font-size:.94em;margin:0 0 6px}
+.fb .no{background:rgba(160,40,40,.12);border-left:4px solid var(--bad)}
+.fb .yes{background:rgba(50,110,55,.14);border-left:4px solid var(--ok)}
+.fb .miss{background:rgba(120,85,40,.1);border-left:4px dashed var(--bad)}
+.earned{display:flex;gap:12px;align-items:center;margin-top:6px;padding:8px 12px;border:2px solid var(--brass);border-radius:3px;background:rgba(184,138,46,.18)}
+.seal{flex:none;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50% 46% 52% 48%;font-size:1.1rem;border:2px solid rgba(0,0,0,.3);box-shadow:inset 0 0 0 3px rgba(0,0,0,.08),0 2px 3px rgba(0,0,0,.35)}
+.seal.echo{color:#3a2808;background:radial-gradient(circle at 36% 30%,#e6c46a,#9c7424)}
+.seal.ledger{color:#f9ebcb;background:radial-gradient(circle at 36% 30%,#cf4a33,#7d1d11)}
+.seal.insight{color:#eef3ff;background:radial-gradient(circle at 36% 30%,#5f86c6,#223f73)}
+.seal.bonus{color:#2a1c05;background:radial-gradient(circle at 36% 30%,#f3d77f,#b9892a)}
+.seal.empty{color:var(--muted);background:transparent;border:2px dashed rgba(90,60,25,.55);box-shadow:none}
 .hls{background:none;border:none;border-bottom:2px dashed var(--muted);padding:0 2px;font:inherit;color:inherit;cursor:pointer}
-.hls:hover{background:rgba(240,204,114,.22)}
-.hls[aria-pressed="true"]{background:rgba(240,204,114,.3);border-bottom:2px solid var(--gold)}
-.hls.found{background:rgba(255,140,152,.22);border-bottom:2px solid var(--bad);cursor:default}
+.hls:hover{background:rgba(255,213,70,.4)}
+.hls[aria-pressed="true"]{background:rgba(255,200,40,.5);border-bottom:2px solid var(--gold)}
+.hls.found{background:rgba(160,40,40,.2);border-bottom:2px solid var(--bad);cursor:default}
 .hls.decoy{border-bottom:2px dotted var(--muted);text-decoration:underline wavy var(--muted)}
 .hls.missed{border-bottom:3px double var(--bad);cursor:default}
-textarea{width:100%;padding:10px 12px;border:2px solid rgba(239,233,214,.4);border-radius:8px;background:rgba(0,0,0,.3);resize:vertical;line-height:1.5;-webkit-user-select:text;user-select:text;font-family:var(--serif);font-size:1.1em}
-.wc{font-size:.82em;color:var(--muted)}
+textarea{width:100%;padding:0 12px;border:2px solid var(--edge);border-radius:3px;background:repeating-linear-gradient(to bottom,rgba(255,251,238,.78) 0,rgba(255,251,238,.78) 27px,rgba(120,85,40,.38) 28px);background-attachment:local;color:var(--ink);resize:vertical;line-height:28px;-webkit-user-select:text;user-select:text;font-family:var(--read);font-size:1.22em}
+.wc{font-size:.88em;color:var(--muted)}
 .wc.ok{color:var(--ok)}
 .bank{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
-.bank button{text-align:left;max-width:100%;border:2px solid var(--gold);background:rgba(240,204,114,.1);border-radius:8px;padding:4px 10px;font-size:.82em;cursor:pointer}
+.bank button{text-align:left;max-width:100%;border:1.5px solid var(--brass);background:rgba(184,138,46,.16);color:var(--ink);border-radius:3px;padding:3px 10px;font-size:.9em;cursor:pointer}
 
-/* menu */
-#menu{position:fixed;inset:calc(env(safe-area-inset-top,0px) + 56px) 0 calc(env(safe-area-inset-bottom,0px) + 10px);margin:auto;width:min(860px,calc(100vw - 20px));max-height:calc(100% - 70px);z-index:40;display:flex;flex-direction:column;padding:14px 18px 16px;height:fit-content}
-#tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-#tabs button{padding:6px 14px;border-radius:8px;border:2px solid rgba(239,233,214,.35);background:rgba(0,0,0,.25);cursor:pointer}
-#tabs button[aria-selected="true"]{border-color:var(--gold);color:var(--gold)}
-#mbody{overflow:auto;font-size:clamp(14px,1.9vw,18px);line-height:1.5;-webkit-user-select:text;user-select:text}
-#mbody h3{margin:.8em 0 .3em;color:var(--gold);font-weight:600}
-.dl{font-family:var(--serif);font-size:1.15em;margin:0 0 10px;color:#2b2113;background:#e8d9ac;padding:8px 12px;border-radius:4px}
+/* the satchel: a leather bag with a stitched edge and a brass buckle, holding parchment pages */
+#menu{position:fixed;inset:calc(env(safe-area-inset-top,0px) + 62px) 0 calc(env(safe-area-inset-bottom,0px) + 10px);margin:auto;width:min(860px,calc(100vw - 20px));max-height:calc(100% - 76px);z-index:40;display:flex;flex-direction:column;padding:24px 22px 18px;height:fit-content;
+  background:var(--grain-d),radial-gradient(ellipse at 30% 8%,rgba(255,200,120,.2),transparent 55%),linear-gradient(180deg,#704928,#4a2d14);border:3px solid #24140a;border-radius:16px 16px 22px 22px;box-shadow:inset 0 0 0 2px rgba(255,220,150,.14),inset 0 0 44px rgba(0,0,0,.5),0 16px 44px rgba(0,0,0,.7);color:#f4e5bd}
+#menu::after{content:"";position:absolute;inset:8px;border:2px dashed rgba(216,184,120,.75);border-radius:11px 11px 17px 17px;pointer-events:none}
+.strap{position:absolute;left:50%;top:-22px;width:80px;height:52px;transform:translateX(-50%);background:var(--grain-d),linear-gradient(180deg,#53341a,#35200d);border:2px solid #24140a;border-radius:4px 4px 12px 12px;box-shadow:0 3px 7px rgba(0,0,0,.55);pointer-events:none;z-index:2}
+.strap i{position:absolute;left:50%;bottom:7px;width:32px;height:23px;transform:translateX(-50%);border:4px solid #c79a3a;border-radius:3px;box-shadow:inset 0 0 0 1px #6b4d12,0 1px 0 #6b4d12}
+.strap i::after{content:"";position:absolute;left:50%;top:-11px;width:4px;height:22px;background:#c79a3a;transform:translateX(-50%);box-shadow:0 0 0 1px #6b4d12}
+#tabs{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 -2px 8px;position:relative;z-index:1}
+#tabs button{padding:5px 14px 6px;border:2px solid #24140a;border-bottom:none;border-radius:8px 8px 0 0;background:var(--grain),linear-gradient(180deg,#cdb88a,#b9a173);color:#4a3820;font-family:var(--sc);font-size:1.02rem;cursor:pointer}
+#tabs button:hover{filter:brightness(1.08)}
+#tabs button[aria-selected="true"]{background:var(--grain),linear-gradient(180deg,#f3e8cb,#ecdcb4);color:var(--gold);padding-bottom:8px;margin-top:-3px}
+#mbody{overflow:auto;font-family:var(--read);font-size:clamp(17px,2.15vw,21px);line-height:1.5;-webkit-user-select:text;user-select:text;color:var(--ink);background:var(--grain),radial-gradient(ellipse at 18% 12%,rgba(255,251,235,.7),transparent 58%),linear-gradient(180deg,#f1e5c8,#e5d3a6);border:2px solid #24140a;border-radius:3px 3px 8px 8px;padding:14px 20px 18px;box-shadow:inset 0 0 26px rgba(122,84,30,.35);position:relative;z-index:0}
+#mbody h3{margin:.8em 0 .3em;color:var(--gold);font-family:var(--sc);font-weight:400;font-size:1.2em;border-bottom:1px solid rgba(120,85,40,.35);padding-bottom:2px}
+#mbody h3:first-child{margin-top:.2em}
+.dl{font-family:var(--read);font-size:1.12em;margin:0 0 10px;color:#2b2113;background:rgba(255,250,232,.55);border-left:3px solid var(--edge);padding:6px 12px;border-radius:2px}
 .dl.struck .tx{text-decoration:line-through;text-decoration-color:#9a2a37;text-decoration-thickness:2px}
-.dl .dn{display:block;font-family:var(--pix);font-size:.7em;opacity:.8}
-.dl.struck .dn{color:#8a1f2c;font-weight:700;opacity:1}
-.dl.lab{background:none;color:var(--gold);font-family:var(--pix);font-size:.95em;padding:0}
-.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:6px 0 12px}
-.slot{display:flex;gap:10px;padding:8px;border:2px solid #3a4880;border-radius:8px;background:rgba(0,0,0,.25)}
-.slot.got{border-color:rgba(239,233,214,.5)}
-.slot b{display:block;line-height:1.25;font-size:.92em}
-.slot .s{display:block;font-size:.76em;color:var(--muted)}
-.slot .bl{display:block;font-size:.76em;margin-top:3px}
+.dl .dn{display:block;font-family:var(--pix);font-size:.78em;opacity:.8}
+.dl.struck .dn{color:#8a1f2c;opacity:1}
+.dl.lab{background:none;border:none;color:var(--gold);font-family:var(--sc);font-size:1.02em;padding:0}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin:6px 0 12px}
+.slot{display:flex;gap:10px;padding:8px;border:1.5px dashed rgba(90,60,25,.5);border-radius:3px;background:rgba(255,251,238,.3)}
+.slot.got{border:1.5px solid var(--brass);background:rgba(255,246,215,.75)}
+.slot b{display:block;line-height:1.25;font-size:1em;color:var(--ink)}
+.slot .s{display:block;font-size:.82em;color:var(--muted)}
+.slot .bl{display:block;font-size:.84em;margin-top:3px}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#menu>.row{margin-top:12px;justify-content:flex-end}
 .stats{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}
-.stats div{padding:6px 14px;border:2px solid #3a4880;border-radius:8px}
-.stats b{display:block;font-size:1.4em;color:var(--gold);font-weight:700}
+.stats div{padding:6px 14px;border:1.5px solid var(--edge);border-radius:3px}
+.stats b{display:block;font-size:1.4em;color:var(--gold)}
 
-/* title */
-#title{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(10,16,40,.35),rgba(4,6,16,.78));padding:16px}
-#title .box{width:min(640px,100%);padding:26px 26px 20px;text-align:center}
-#title h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.1rem,7vw,3.6rem);line-height:1.05;margin:0 0 6px;color:var(--gold);text-shadow:0 0 22px rgba(240,204,114,.45)}
-#title p{margin:0 0 12px;line-height:1.5}
-#title .sub{color:#dfe6fb;font-size:1.05rem}
-#title .small{color:var(--muted);font-size:.82rem}
-#title input{padding:9px 12px;border:2px solid rgba(239,233,214,.5);border-radius:8px;background:rgba(0,0,0,.3);min-width:min(280px,100%);text-align:center;-webkit-user-select:text;user-select:text}
+/* title: a printed broadside */
+#title{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(30,16,4,.4),rgba(8,4,0,.82));padding:16px}
+#title .box{width:min(640px,100%);padding:30px 30px 22px;text-align:center}
+#title h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.2rem,7vw,3.7rem);line-height:1.05;margin:0 0 8px;color:#2a1c0e;padding-bottom:8px;border-bottom:3px double var(--edge)}
+#title p{margin:0 0 12px;line-height:1.5;font-family:var(--read)}
+#title .sub{color:#4a3720;font-size:1.22rem}
+#title .small{color:var(--muted);font-size:.9rem}
+#title input{padding:6px 12px;border:none;border-bottom:2px solid var(--edge);background:rgba(255,250,232,.4);color:var(--ink);font-family:var(--serif);font-size:1.25rem;min-width:min(280px,100%);text-align:center;-webkit-user-select:text;user-select:text}
 #title .row{justify-content:center}
 
 /* toast & touch */
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);transform:translateX(-50%);z-index:60;padding:8px 18px;border-radius:999px;font-size:.95rem;max-width:calc(100vw - 24px);text-align:center}
+#toast{border-radius:3px 7px 4px 8px;font-family:var(--read);font-size:1.12rem}
 #touch{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);display:none;justify-content:space-between;padding:0 14px;z-index:25;pointer-events:none}
 @media (pointer:coarse){#touch{display:flex}}
 body.modal #touch,body.modal #hint{display:none}
 #dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(3,54px);gap:3px;pointer-events:auto}
-#dpad button,#acts button{border-radius:50%;border:2px solid var(--win-line);background:rgba(12,21,48,.72);color:var(--gold);font-size:1.2rem;font-weight:700;touch-action:none}
+#dpad button,#acts button{border-radius:50%;border:2px solid #24140a;background:var(--grain-d),radial-gradient(circle at 35% 30%,#7d5532,#48290f);color:#f4e5bd;font-size:1.2rem;touch-action:none;box-shadow:0 2px 0 #24140a,inset 0 0 0 2px rgba(216,184,120,.35)}
 #dpad button{border-radius:12px}
 #acts{display:flex;gap:12px;align-items:flex-end;pointer-events:auto}
 #acts button{width:62px;height:62px}
@@ -174,6 +203,7 @@ body.modal #touch,body.modal #hint{display:none}
 </div>
 
 <div id="menu" class="win" hidden role="dialog" aria-label="Clerk’s satchel">
+  <span class="strap" aria-hidden="true"><i></i></span>
   <div id="tabs" role="tablist"></div>
   <div id="mbody"></div>
   <div class="row"><button class="go" id="mClose" type="button">Close</button></div>
@@ -186,7 +216,7 @@ body.modal #touch,body.modal #hint{display:none}
     <p><label for="nm" class="small">Your name, for your case file</label><br><input id="nm" type="text" maxlength="60" autocomplete="name"></p>
     <div class="row"><button class="go" id="begin" type="button">Begin</button><button class="go" id="reset" type="button" hidden>Start over</button></div>
     <p class="small" style="margin-top:12px"><a href="../" style="color:var(--gold)">Back to the three assignment options</a>. You only need to complete one option.</p>
-    <p class="small" style="margin-top:12px">Move: arrow keys or WASD. Talk: Z, Enter, or Space. Satchel: Esc. Quotes are real and labeled by source. The map is stylized, not to scale, and the narration is the game’s own.</p>
+    <p class="small" style="margin-top:12px">Move: arrow keys or WASD. Sprint: hold Shift. Talk: E, Z, Enter, or Space. Satchel: Esc. Quotes are real and labeled by source. The map is stylized, not to scale, and the narration is the game’s own.</p>
   </div>
 </div>
 
@@ -354,50 +384,116 @@ var HL_STRUCK={prompt:"Now read the version Congress kept. Tap the phrases where
 var TOTAL=Object.keys(CARDS).length;
 
 /* ============ CONTENT: charges ============ */
+/* All 27 charges, in the order and wording of the National Archives transcription. Charges with ctx and check also have background and a card challenge. */
 var GRIEVANCES=[
- {id:"g_assent",title:"Laws blocked",at:[22,23],text:"He has refused his Assent to Laws, the most wholesome and necessary for the public good.",
+ {id:"c01",n:1,title:"Laws blocked",text:"He has refused his Assent to Laws, the most wholesome and necessary for the public good.",
   ctx:"Colonial assemblies passed laws, but royal governors could veto them, and the Crown could cancel them later through the Privy Council in London. Waiting for approval from across the ocean could take a long time.",
   check:{prompt:"How does the U.S. Constitution answer the worry that one official can block the people’s laws?",opts:[
    {t:"The President can veto a bill, but two-thirds of both houses of Congress can override the veto.",ok:1,why:"Article I, Section 7 gives the President a veto, but not the last word. Congress can override it."},
    {t:"The President cannot veto bills at all.",ok:0,why:"The President can veto. The check is that Congress can override."},
    {t:"Only the Supreme Court can approve laws before they take effect.",ok:0,why:"Courts review laws after they are passed, in cases brought before them. They do not pre-approve them."}],card:"echo_veto"}},
- {id:"g_judges",title:"Judges at the King’s pleasure",at:[34,23],text:"He has obstructed the Administration of Justice, by refusing his Assent to Laws for establishing Judiciary powers. He has made Judges dependent on his Will alone, for the tenure of their offices, and the amount and payment of their salaries.",
+ {id:"c02",n:2,title:"Governors forbidden to act",text:"He has forbidden his Governors to pass Laws of immediate and pressing importance, unless suspended in their operation till his Assent should be obtained; and when so suspended, he has utterly neglected to attend to them.",
+  ctx:"Royal governors carried instructions from London. Some told them not to approve certain colonial laws until the Crown had agreed, and a “suspending clause” could keep a new law from taking effect for months or years. Colonists complained that laws they needed urgently sat on a shelf an ocean away.",
+  check:{"prompt": "How does the Constitution answer the fear that an executive could put the people’s laws on hold?", "opts": [{"t": "The President must “take Care that the Laws be faithfully executed” (Article II, Section 3), so the executive carries out the laws Congress passes.", "ok": 1, "why": "The Take Care Clause makes carrying out the laws a duty, not a choice the executive can drop whenever it likes. (How much discretion the executive has in how it enforces them is still debated.)"}, {"t": "The President may suspend any law he disagrees with until Congress approves it again.", "ok": 0, "why": "No clause gives the President that power. The English Bill of Rights (1689) had already rejected a king’s power to suspend laws on his own, and the Constitution gives lawmaking to Congress."}, {"t": "Every law must be approved by the Supreme Court before it takes effect.", "ok": 0, "why": "Courts review laws after they are passed, in cases brought before them. They do not pre-approve laws."}], "card": "echo_takecare"}},
+ {id:"c03",n:3,title:"Representation as a price",text:"He has refused to pass other Laws for the accommodation of large districts of people, unless those people would relinquish the right of Representation in the Legislature, a right inestimable to them and formidable to tyrants only.",
+  ctx:"Fast-growing backcountry districts in several colonies had few seats, or none, in their colonial assemblies, even though their settlers paid taxes. Colonists complained that the Crown and its governors resisted adding seats for growing districts, so the people with the most at stake in new settlements had the least say.",
+  check:{"prompt": "Which modern rule answers the complaint that some districts had far less say in their legislature than others?", "opts": [{"t": "Legislative districts must have roughly equal populations, so each person’s vote counts about the same (Reynolds v. Sims, 1964).", "ok": 1, "why": "In Reynolds v. Sims the Supreme Court applied the Equal Protection Clause to state legislative districts, and in Wesberry v. Sanders (1964) it did the same for U.S. House districts."}, {"t": "Every county must elect exactly one representative, no matter how many people live there.", "ok": 0, "why": "That is the kind of system Reynolds v. Sims struck down, because tiny counties had as much power as huge ones."}, {"t": "Only property owners may vote on how districts are drawn.", "ok": 0, "why": "Property requirements for voting have been struck down, and districts must be drawn on population, not wealth."}], "card": "echo_onevote"}},
+ {id:"c04",n:4,title:"Legislatures summoned far away",text:"He has called together legislative bodies at places unusual, uncomfortable, and distant from the depository of their public Records, for the sole purpose of fatiguing them into compliance with his measures.",
+  ctx:"Royal governors had the power to call, delay, and end meetings of colonial assemblies. In 1770 Massachusetts Governor Thomas Hutchinson moved the assembly from Boston to Cambridge, away from the colony’s public records, over its objections. Colonists called it a trick to wear lawmakers down.",
+  check:{"prompt": "Which part of the Constitution keeps the executive from moving the legislature around to pressure it?", "opts": [{"t": "Neither house of Congress may adjourn for more than three days, or move to another place, without the other’s consent (Article I, Section 5).", "ok": 1, "why": "Congress controls where it sits and when it breaks. The President can call it into special session on extraordinary occasions, but cannot choose its meeting place."}, {"t": "The President may move Congress to any city he chooses.", "ok": 0, "why": "The Constitution gives the President no such power. Moving the place of meeting requires the consent of both houses."}, {"t": "Congress may meet only in the city where the Supreme Court sits.", "ok": 0, "why": "No such rule exists. The Constitution says each house controls its own proceedings."}], "card": "echo_meetplace"}},
+ {id:"c05",n:5,title:"Assemblies dissolved",text:"He has dissolved Representative Houses repeatedly, for opposing with manly firmness his invasions on the rights of the people.",
+  ctx:"Royal governors could dissolve colonial assemblies at will. In 1768 the governor of Massachusetts dissolved the assembly after it refused to withdraw a letter protesting the Townshend duties, and in 1769 Virginia’s governor dissolved the House of Burgesses after it passed resolutions against British policy.",
+  check:{"prompt": "Which constitutional protection helps legislators oppose the executive without being punished for it?", "opts": [{"t": "The Speech or Debate Clause: members of Congress cannot be questioned “in any other Place” for their speech or debate in Congress (Article I, Section 6).", "ok": 1, "why": "Legislators can argue against the President without fear of arrest or prosecution for their legislative speech. Fixed terms and set election dates also mean no one can simply dissolve Congress."}, {"t": "The President may remove any member of Congress who opposes him.", "ok": 0, "why": "Only each house can expel its own members, and it takes a two-thirds vote (Article I, Section 5). The President has no such power."}, {"t": "Members of Congress must vote with the President’s party.", "ok": 0, "why": "There is no such rule. Members are independent, which is the point of separate branches."}], "card": "echo_speech"}},
+ {id:"c06",n:6,title:"No new elections",text:"He has refused for a long time, after such dissolutions, to cause others to be elected; whereby the Legislative powers, incapable of Annihilation, have returned to the People at large for their exercise; the State remaining in the mean time exposed to all the dangers of invasion from without, and convulsions within.",
+  ctx:"After governors dissolved an assembly, colonists complained that they could delay calling new elections, leaving a colony without elected lawmakers while the governor ruled with his council. The Declaration says the power then returned “to the People at large,” leaving the colony open to danger from outside and trouble within.",
+  check:{"prompt": "What keeps an American official from simply refusing to hold elections?", "opts": [{"t": "The Constitution sets fixed terms and election schedules: two years for the House, six for the Senate, and four for the President.", "ok": 1, "why": "Because terms end on a set date, elections must happen on schedule. (See Article I, Section 2; the 17th Amendment; Article II, Section 1; and the 20th Amendment.)"}, {"t": "Elections are held only when the President says the country is ready.", "ok": 0, "why": "The President has no power to call or cancel regular elections. They follow the calendar set by the Constitution and by law."}, {"t": "Congress may skip elections whenever it votes to do so.", "ok": 0, "why": "Terms of office are fixed by the Constitution, so Congress cannot extend its own terms by an ordinary vote."}], "card": "echo_elections"}},
+ {id:"c07",n:7,title:"Population and land blocked",text:"He has endeavoured to prevent the population of these States; for that purpose obstructing the Laws for Naturalization of Foreigners; refusing to pass others to encourage their migrations hither, and raising the conditions of new Appropriations of Lands.",
+  ctx:"Colonial assemblies wanted settlers to come and to take up land. Britain blocked some colonial naturalization laws, and in 1763 the Crown issued a proclamation barring settlement west of the Appalachian Mountains. Colonists complained that the Crown was holding back their growth, even as new settlers were willing to come.",
+  check:{"prompt": "Under the Constitution, who sets the rules for becoming a citizen?", "opts": [{"t": "Congress, through its power to set a “uniform Rule of Naturalization” (Article I, Section 8), along with the 14th Amendment’s citizenship clause.", "ok": 1, "why": "A national legislature, not a single ruler, writes the rules for naturalization, and the 14th Amendment says people born or naturalized in the United States are citizens."}, {"t": "The President alone, by executive order.", "ok": 0, "why": "Article II gives the President no power to write naturalization law. Congress does that, and the President carries it out."}, {"t": "Each state decides who becomes a U.S. citizen.", "ok": 0, "why": "The Constitution makes naturalization uniform across the nation, so no state can set its own rules for national citizenship."}], "card": "echo_naturalize"}},
+ {id:"c08",n:8,title:"Courts obstructed",text:"He has obstructed the Administration of Justice, by refusing his Assent to Laws for establishing Judiciary powers.",
+  ctx:"Colonial assemblies passed laws to set up courts and to pay judges, but the governor or the Crown could refuse approval. When a dispute over a court law could not be settled, courts could go unfunded or unstaffed, and people had nowhere to take a case.",
+  check:{"prompt": "Under the Constitution, who creates the lower federal courts?", "opts": [{"t": "Congress, by passing laws (Article III, Section 1). The Judiciary Act of 1789 created the first lower courts.", "ok": 1, "why": "Article III creates one Supreme Court and lets Congress create the others. Courts therefore exist because the people’s representatives passed a law, not because one ruler approved it."}, {"t": "The President, by executive order.", "ok": 0, "why": "The President nominates judges but cannot create courts. That takes an act of Congress."}, {"t": "The Supreme Court creates new courts when it needs them.", "ok": 0, "why": "The Supreme Court decides cases. It does not create courts."}], "card": "echo_courts"}},
+ {id:"c09",n:9,title:"Judges at the King’s pleasure",text:"He has made Judges dependent on his Will alone, for the tenure of their offices, and the amount and payment of their salaries.",
   ctx:"In England, judges had held office during good behavior since 1701. In the colonies, judges generally served at the Crown’s pleasure. In 1772 the Crown announced that Massachusetts judges would be paid by the Crown rather than by the colonial assembly.",
   check:{prompt:"How does the Constitution try to keep federal judges independent of whoever holds power?",opts:[
    {t:"Federal judges hold office “during good Behaviour,” and their pay can’t be reduced while they serve (Article III, Section 1).",ok:1,why:"Tenure and protected pay mean a judge can rule against the government without fear of being fired or having pay cut."},
    {t:"Federal judges are elected to four-year terms by the voters.",ok:0,why:"Some state judges are elected, but federal judges are appointed and serve until they resign, retire, or are removed."},
    {t:"The President may remove federal judges whenever he disagrees with their rulings.",ok:0,why:"Only Congress can remove a federal judge, through impeachment and conviction."}],card:"echo_judges"}},
- {id:"g_armies",title:"Armies in peacetime",at:[42,25],text:"He has kept among us, in times of peace, Standing Armies without the Consent of our legislatures. He has affected to render the Military independent of and superior to the Civil power.",
+ {id:"c10",n:10,title:"Swarms of officers",text:"He has erected a multitude of New Offices, and sent hither swarms of Officers to harrass our people, and eat out their substance.",
+  ctx:"In 1767 Parliament created an American Board of Customs Commissioners in Boston, with new inspectors, clerks, and enforcement officers paid from the duties they collected. Colonists saw a growing crowd of outsiders hired to police them and paid out of their own pockets.",
+  check:{"prompt": "How does the Constitution control the creation and filling of government offices?", "opts": [{"t": "Congress creates offices by law, and the President nominates officers with the advice and consent of the Senate (Article II, Section 2).", "ok": 1, "why": "More than one branch must act, so no single official can build a payroll of loyal officers alone."}, {"t": "The President can create and fill any office he wants without the Senate.", "ok": 0, "why": "For principal officers the Senate must consent. Congress can let the President alone, the courts, or department heads appoint lesser officers, but it is Congress that decides."}, {"t": "State governors appoint all federal officers.", "ok": 0, "why": "Federal officers are appointed under Article II, not by state governors."}], "card": "echo_appoint"}},
+ {id:"c11",n:11,title:"Armies in peacetime",text:"He has kept among us, in times of peace, Standing Armies without the Consent of our legislatures.",
   ctx:"After the Seven Years’ War, Britain kept thousands of regular troops in North America. In 1768 troops arrived in Boston to support customs officers, and the tension there led to the Boston Massacre in 1770.",
   check:{prompt:"Which feature of the Constitution best answers the fear of a standing army that answers to no one?",opts:[
    {t:"Congress alone raises and funds armies, with no army funding for more than two years at a time, and a civilian is Commander in Chief.",ok:1,why:"Article I, Section 8 gives Congress the power to raise armies and limits their funding. Article II makes the President, a civilian, Commander in Chief."},
    {t:"The Constitution bans the country from having any army in peacetime.",ok:0,why:"There is no such ban. The Constitution allows armies but puts Congress and civilian leaders in control."},
    {t:"State governors control the national military in peacetime.",ok:0,why:"State militias exist, but the national military answers to Congress and the President."}],card:"echo_armies"}},
- {id:"g_quarter",title:"Soldiers in our homes",at:[40,31],text:"For quartering large bodies of armed troops among us.",
+ {id:"c12",n:12,title:"Military above civil power",text:"He has affected to render the Military independent of and superior to the Civil power.",
+  ctx:"From 1763 General Thomas Gage was the British army’s commander in North America, and in 1774 he was also made governor of Massachusetts. Colonists saw the head of the army running the civil government as the military placed above the civil power.",
+  check:{"prompt": "Which modern law keeps the military from acting as a domestic police force?", "opts": [{"t": "The Posse Comitatus Act (1878).", "ok": 1, "why": "It generally bars using the Army to enforce civilian law unless Congress or the Constitution allows it. (Congress has created exceptions, such as the Insurrection Act.)"}, {"t": "The Second Amendment.", "ok": 0, "why": "The Second Amendment concerns the right to keep and bear arms, not what the military may do at home."}, {"t": "The Fifth Amendment’s Takings Clause.", "ok": 0, "why": "That clause is about taking private property for public use with compensation."}], "card": "echo_posse"}},
+ {id:"c13",n:13,title:"A foreign jurisdiction",text:"He has combined with others to subject us to a jurisdiction foreign to our constitution, and unacknowledged by our laws; giving his Assent to their Acts of pretended Legislation:",
+  ctx:"In the Declaratory Act of 1766, Parliament claimed the power to make laws binding the colonies “in all cases whatsoever.” Colonists replied that their own elected assemblies, and not Parliament, were their legislatures. They were loyal to the King but would not accept a body in which they had no vote.",
+  check:{"prompt": "How does the U.S. system answer the fear of being ruled by a body that has no authority under your own constitution?", "opts": [{"t": "Government has only the powers the Constitution gives it, and the 10th Amendment reserves the rest to the states and the people.", "ok": 1, "why": "Powers must come from the Constitution. Anything not delegated to the national government, and not forbidden to the states, stays with the states or the people."}, {"t": "Any law passed by any government anywhere applies in the United States.", "ok": 0, "why": "A law binds people only if it comes from a body with authority over them."}, {"t": "Only the President decides which laws apply.", "ok": 0, "why": "Laws come from Congress and the state legislatures. The President enforces them and the courts interpret them."}], "card": "echo_tenth"}},
+ {id:"c14",n:14,title:"Soldiers in our homes",text:"For Quartering large bodies of armed troops among us:",
   ctx:"The Quartering Acts of 1765 and 1774 required colonies to house and supply British troops, in some cases in buildings such as barns and unoccupied houses. Colonists feared the same power could reach their own homes.",
   check:{prompt:"Which part of the Bill of Rights speaks directly to this complaint?",opts:[
    {t:"The Third Amendment.",ok:1,why:"The Third Amendment bars quartering soldiers in a house in peacetime without the owner’s consent."},
    {t:"The Second Amendment.",ok:0,why:"The Second Amendment concerns the right to keep and bear arms, not soldiers living in homes."},
    {t:"The Eighth Amendment.",ok:0,why:"The Eighth Amendment bars excessive bail and fines and cruel and unusual punishments."}],card:"echo_quarter"}},
- {id:"g_tax",title:"Taxes without consent",at:[34,35],text:"For imposing Taxes on us without our Consent.",
+ {id:"c15",n:15,title:"Mock trials for soldiers",text:"For protecting them, by a mock Trial, from punishment for any Murders which they should commit on the Inhabitants of these States:",
+  ctx:"In 1774 Parliament passed the Administration of Justice Act, which let royal officials accused of capital crimes while enforcing the law in Massachusetts be tried in England or another colony. Colonists argued that distant trials, far from the witnesses, shielded officials from punishment. (The British soldiers in the 1770 Boston Massacre were tried in Boston, where John Adams defended them, and most were acquitted.)",
+  check:{"prompt": "Which modern law lets people hold government officials accountable when they violate constitutional rights?", "opts": [{"t": "42 U.S.C. § 1983, from the Civil Rights Act of 1871, which lets people sue state and local officials who violate their rights while acting for the government.", "ok": 1, "why": "Officials act under the law, not above it. Courts also recognize immunity defenses, and how broad they should be is still debated."}, {"t": "The Insurrection Act.", "ok": 0, "why": "The Insurrection Act lets the President use troops to put down unrest. It does not give people a way to sue officials."}, {"t": "The 25th Amendment.", "ok": 0, "why": "The 25th Amendment covers presidential succession and disability."}], "card": "echo_1983"}},
+ {id:"c16",n:16,title:"Trade cut off",text:"For cutting off our Trade with all parts of the world:",
+  ctx:"The Boston Port Act of 1774 closed Boston’s harbor until the town paid for the tea destroyed in the Boston Tea Party, and the Prohibitory Act of December 1775 banned trade with the colonies and allowed American ships to be seized. Colonists called it cutting off their trade with the world.",
+  check:{"prompt": "Which constitutional rule responds to the idea of punishing one place by closing its ports?", "opts": [{"t": "No regulation of commerce or revenue may give a preference to the ports of one state over those of another (Article I, Section 9).", "ok": 1, "why": "Congress regulates trade for the whole nation and must treat the states’ ports even-handedly."}, {"t": "The President may close any state’s ports as a punishment.", "ok": 0, "why": "The Constitution gives no such power. Trade is regulated by Congress, and the Constitution forbids giving the ports of one state preference over another."}, {"t": "Each state may close its ports to every other state’s ships.", "ok": 0, "why": "States cannot block interstate commerce this way. The Commerce Clause gives Congress power over trade among the states."}], "card": "echo_ports"}},
+ {id:"c17",n:17,title:"Taxes without consent",text:"For imposing Taxes on us without our Consent:",
   ctx:"After the Seven Years’ War, Parliament taxed the colonies directly through the Stamp Act (1765) and later the Townshend duties and the Tea Act. Colonists elected no members of Parliament. In 1766 Parliament asserted the power to make laws for the colonies “in all cases whatsoever.”",
   check:{prompt:"How does the Constitution try to prevent “taxation without representation”?",opts:[
    {t:"Bills for raising revenue must start in the House of Representatives, whose members are elected directly by the people.",ok:1,why:"Article I, Section 7 puts the power to originate taxes in the chamber closest to voters. (Residents of D.C. pay federal taxes without a voting member of Congress, which is still debated.)"},
    {t:"Only the President may set tax rates.",ok:0,why:"Taxing is a power of Congress. The President signs or vetoes the bills."},
    {t:"Taxes require unanimous approval of the states.",ok:0,why:"Under the Articles of Confederation, unanimity made taxing nearly impossible, one reason the Constitution replaced it."}],card:"echo_tax"}},
- {id:"g_jury",title:"Jury trials taken away",at:[21,31],text:"For depriving us in many cases, of the benefits of Trial by Jury.",
+ {id:"c18",n:18,title:"Jury trials taken away",text:"For depriving us in many cases, of the benefits of Trial by Jury:",
   ctx:"To enforce customs laws, Britain expanded vice-admiralty courts, where a judge decided cases without a jury. Colonial juries were reluctant to convict local merchants of smuggling, so moving those cases away from juries removed a local check.",
   check:{prompt:"Which amendments protect jury trials today?",opts:[
    {t:"The Sixth (criminal cases) and Seventh (many civil cases).",ok:1,why:"The Sixth guarantees an impartial jury in criminal prosecutions, and the Seventh preserves jury trial in many civil cases."},
    {t:"The Fourth and Fifth Amendments only.",ok:0,why:"The Fourth covers searches and seizures. The Fifth covers grand juries, self-incrimination, and due process. The jury guarantees are in the Sixth and Seventh."},
    {t:"No amendment. Jury trial is only a tradition.",ok:0,why:"It is written into the Constitution, in Article III and the Sixth and Seventh Amendments."}],card:"echo_jury"}},
- {id:"g_beyond",title:"Trials across the ocean",at:[26,35],text:"For transporting us beyond Seas to be tried for pretended offences.",
+ {id:"c19",n:19,title:"Trials across the ocean",text:"For transporting us beyond Seas to be tried for pretended offences:",
   ctx:"In 1769 Parliament revived an old statute that allowed treason suspects in the colonies to be sent to England for trial. The Administration of Justice Act of 1774 likewise moved trials of officials accused in Massachusetts out of the colony. Either way, justice moved far from the witnesses and a jury who knew the facts.",
   check:{prompt:"What protects a person today against being hauled to a distant place for trial?",opts:[
    {t:"The Constitution requires criminal trials in the state and district where the crime was committed (Article III, Section 2, and the Sixth Amendment).",ok:1,why:"Venue rules keep prosecutions near the witnesses and the community whose jurors will judge the facts."},
    {t:"Nothing. Prosecutors may choose any court in the country.",ok:0,why:"Venue rules limit that choice. A prosecution generally has to be brought where the crime occurred."},
-   {t:"Only the Third Amendment.",ok:0,why:"The Third Amendment is about quartering soldiers, not where trials are held."}],card:"echo_venue"}}
+   {t:"Only the Third Amendment.",ok:0,why:"The Third Amendment is about quartering soldiers, not where trials are held."}],card:"echo_venue"}},
+ {id:"c20",n:20,title:"Neighboring laws abolished",text:"For abolishing the free System of English Laws in a neighbouring Province, establishing therein an Arbitrary government, and enlarging its Boundaries so as to render it at once an example and fit instrument for introducing the same absolute rule into these Colonies:",
+  ctx:"The Quebec Act of 1774 enlarged Quebec’s boundaries to the Ohio River, kept French civil law, and set up a governor and an appointed council with no elected assembly. Many colonists, who also feared its protection of the Catholic Church, saw it as a model for ruling them without their own assemblies.",
+  check:{"prompt": "How does the Constitution protect people from being governed with no elected voice?", "opts": [{"t": "It guarantees every state “a Republican Form of Government,” meaning government by elected representatives (Article IV, Section 4).", "ok": 1, "why": "The Guarantee Clause promises representative government. (The Supreme Court has treated many Guarantee Clause questions as political, so Congress and voters carry much of the weight.)"}, {"t": "Federal judges govern new territories by themselves.", "ok": 0, "why": "Judges decide cases. Congress governs territories, and the Constitution does not let judges rule alone."}, {"t": "The President rules every territory directly, with no legislature.", "ok": 0, "why": "Congress sets up territorial governments, and U.S. territories have had elected legislatures."}], "card": "echo_guarantee"}},
+ {id:"c21",n:21,title:"Charters taken away",text:"For taking away our Charters, abolishing our most valuable Laws, and altering fundamentally the Forms of our Governments:",
+  ctx:"The Massachusetts Government Act of 1774 changed Massachusetts’s charter without the colony’s consent. It let the Crown appoint the colony’s council and limited town meetings. To colonists, a charter was a promise that the Crown could not simply rewrite when it pleased.",
+  check:{"prompt": "Which early Supreme Court case held that a government could not simply rewrite a charter it had granted?", "opts": [{"t": "Dartmouth College v. Woodward (1819).", "ok": 1, "why": "The Court held that Dartmouth’s royal charter was a contract that New Hampshire could not impair under the Contract Clause (Article I, Section 10)."}, {"t": "Marbury v. Madison (1803).", "ok": 0, "why": "Marbury v. Madison established judicial review. It was not about rewriting a charter."}, {"t": "Brown v. Board of Education (1954).", "ok": 0, "why": "Brown was about segregated public schools and the 14th Amendment."}], "card": "echo_dartmouth"}},
+ {id:"c22",n:22,title:"Legislatures suspended",text:"For suspending our own Legislatures, and declaring themselves invested with power to legislate for us in all cases whatsoever.",
+  ctx:"In 1767 Parliament passed the New York Restraining Act, which suspended New York’s assembly until it complied with the Quartering Act, and the Declaratory Act of 1766 claimed power to legislate for the colonies “in all cases whatsoever.” Colonists saw an outside body claiming the power to switch their legislatures off.",
+  check:{"prompt": "Which principle keeps one branch of government from suspending another?", "opts": [{"t": "Separation of powers: each branch has its own powers, and none can abolish or suspend the others (Articles I, II, and III).", "ok": 1, "why": "Congress makes laws, the President carries them out, and the courts decide cases. Each can check the others, and none can switch another off."}, {"t": "The executive branch controls all three branches.", "ok": 0, "why": "The Constitution splits power on purpose to keep any one branch from controlling the rest."}, {"t": "Judges may suspend Congress during emergencies.", "ok": 0, "why": "Courts can strike down unconstitutional laws, but they cannot suspend the legislature."}], "card": "echo_separation"}},
+ {id:"c23",n:23,title:"Protection withdrawn, war declared",text:"He has abdicated Government here, by declaring us out of his Protection and waging War against us.",
+  ctx:"The Prohibitory Act, passed in December 1775, declared American ships and goods open to seizure and put the colonies outside the King’s protection. Fighting had begun at Lexington and Concord in April 1775. The Declaration said that by waging war on his subjects, the King had “abdicated” his government here.",
+  check:{"prompt": "Which part of the Constitution divides the power to take the nation to war?", "opts": [{"t": "Congress has the power to declare war and fund the military, and the President is Commander in Chief (Article I, Section 8; Article II, Section 2).", "ok": 1, "why": "Splitting war powers between two branches prevents one person from starting a war alone. The War Powers Resolution (1973) adds rules, and the balance is still debated."}, {"t": "The President alone declares war.", "ok": 0, "why": "The Constitution gives the power to declare war to Congress."}, {"t": "The Supreme Court declares war.", "ok": 0, "why": "Courts decide cases. They do not declare war."}], "card": "echo_warpower"}},
+ {id:"c24",n:24,title:"Seas plundered, towns burnt",text:"He has plundered our seas, ravaged our Coasts, burnt our towns, and destroyed the lives of our people.",
+  ctx:"In October 1775 the Royal Navy bombarded and burned much of Falmouth, in what is now Maine, and British ships seized American vessels and raided the coast. Colonists said the King’s forces were destroying the property and lives of the people they were supposed to protect.",
+  check:{"prompt": "Which constitutional protection addresses government destruction or seizure of private property?", "opts": [{"t": "The Takings Clause of the 5th Amendment: private property may not be taken for public use without just compensation.", "ok": 1, "why": "Together with due process, it means the government must follow the law and pay when it takes property."}, {"t": "The Ninth Amendment, which lets the government take property in wartime without payment.", "ok": 0, "why": "The Ninth Amendment says rights not listed in the Constitution are still held by the people."}, {"t": "The Twelfth Amendment, which protects property from fire.", "ok": 0, "why": "The Twelfth Amendment is about how the President and Vice President are elected."}], "card": "echo_takings"}},
+ {id:"c25",n:25,title:"Foreign mercenaries",text:"He is at this time transporting large Armies of foreign Mercenaries to compleat the works of death, desolation and tyranny, already begun with circumstances of Cruelty & perfidy scarcely paralleled in the most barbarous ages, and totally unworthy the Head of a civilized nation.",
+  ctx:"Britain hired German soldiers from states such as Hesse-Kassel, often called “Hessians,” to fight in America. Roughly 30,000 German troops served during the war. Colonists were outraged that their king would use hired foreign soldiers against his own subjects, and the Declaration spoke of “works of death, desolation and tyranny.”",
+  check:{"prompt": "Which modern rules answer the Declaration’s complaint about cruelty in war?", "opts": [{"t": "The Geneva Conventions (1949), which set legal limits on how armies treat civilians, prisoners, and the wounded.", "ok": 1, "why": "Serious violations are war crimes, and the U.S. War Crimes Act (1996) makes some of them crimes in American courts."}, {"t": "The Eighth Amendment, which bans cruelty by every army in the world.", "ok": 0, "why": "The Eighth Amendment limits punishments imposed by American governments. It does not govern foreign armies."}, {"t": "The Third Amendment, which bars foreign soldiers from entering the country.", "ok": 0, "why": "The Third Amendment is about quartering soldiers in homes."}], "card": "echo_geneva"}},
+ {id:"c26",n:26,title:"Captives forced to fight",text:"He has constrained our fellow Citizens taken Captive on the high Seas to bear Arms against their Country, to become the executioners of their friends and Brethren, or to fall themselves by their Hands.",
+  ctx:"The Prohibitory Act of 1775 allowed the Royal Navy to force captured American sailors to serve on British warships. The Declaration said these “fellow Citizens” were made to become “the executioners of their friends and Brethren.” Forcing sailors into service this way is called impressment.",
+  check:{"prompt": "What does modern law say about forcing prisoners to fight for the nation that captured them?", "opts": [{"t": "It is forbidden. Under the Third Geneva Convention (1949), compelling a prisoner of war to serve in the enemy’s forces is a grave breach.", "ok": 1, "why": "Prisoners of war are protected by treaty, and the U.S. War Crimes Act punishes some grave breaches."}, {"t": "It is allowed if the captor’s government declares an emergency.", "ok": 0, "why": "The protection does not depend on any emergency declaration."}, {"t": "It is allowed if the prisoner is a sailor.", "ok": 0, "why": "Sailors captured at sea are covered like other prisoners of war."}], "card": "echo_pow"}},
+ {id:"c27",n:27,title:"Insurrections and frontier attacks",text:"He has excited domestic insurrections amongst us, and has endeavoured to bring on the inhabitants of our frontiers, the merciless Indian Savages, whose known rule of warfare, is an undistinguished destruction of all ages, sexes and conditions.",
+  ctx:"In November 1775 Virginia’s royal governor, Lord Dunmore, promised freedom to enslaved people of rebel owners who joined the British. British officials also sought Native allies, and many Native nations sided with the Crown because Britain had tried to limit settlement west of the Appalachians. The Declaration blamed the King for “domestic insurrections” and for bringing on “merciless Indian Savages.”",
+  check:{"prompt": "Which Supreme Court decision recognized Native nations as distinct political communities with their own authority?", "opts": [{"t": "Worcester v. Georgia (1832).", "ok": 1, "why": "The Court held that Georgia’s laws had no force within Cherokee territory. The ruling was not enforced and the Cherokee were forced to move, but it remains a foundation of tribal sovereignty in U.S. law."}, {"t": "Plessy v. Ferguson (1896).", "ok": 0, "why": "Plessy upheld racially segregated railroad cars under the doctrine of “separate but equal.” It was not about Native nations."}, {"t": "Dred Scott v. Sandford (1857).", "ok": 0, "why": "Dred Scott held that Black Americans could not be citizens, a ruling later overturned by the 13th and 14th Amendments."}], "card": "echo_worcester"}}
 ];
+var PEDS=[{id:"p1",at:[22,23]},{id:"p2",at:[34,23]},{id:"p3",at:[42,25]},{id:"p4",at:[40,31]},{id:"p5",at:[34,35]},{id:"p6",at:[21,31]},{id:"p7",at:[26,35]}];
+Object.assign(CARDS,{"echo_takecare": {"kind": "echo", "title": "Take Care Clause", "sub": "Article II, Section 3", "blurb": "The President must “take Care that the Laws be faithfully executed.” The executive enforces the laws Congress passes rather than putting them on hold at will.", "charge": true}, "echo_onevote": {"kind": "echo", "title": "One Person, One Vote", "sub": "Reynolds v. Sims, 1964", "blurb": "The Supreme Court ruled that legislative districts must have roughly equal populations. Districts that give some voters much more weight than others violate the Equal Protection Clause.", "charge": true}, "echo_meetplace": {"kind": "echo", "title": "Congress Controls Its Own Meetings", "sub": "Article I, Section 5", "blurb": "Neither house of Congress may adjourn for more than three days, or move to another place, without the consent of the other. Congress, not the President, controls where it sits.", "charge": true}, "echo_speech": {"kind": "echo", "title": "Speech or Debate Clause", "sub": "Article I, Section 6", "blurb": "Members of Congress cannot be questioned “in any other Place” for what they say in legislative debate. That protects lawmakers who oppose the executive.", "charge": true}, "echo_elections": {"kind": "echo", "title": "Elections on a Schedule", "sub": "Article I, Section 2; Article II, Section 1", "blurb": "Representatives serve two-year terms and Presidents four, so elections come on a fixed calendar. No official can simply decide not to hold them.", "charge": true}, "echo_naturalize": {"kind": "echo", "title": "Naturalization Power", "sub": "Article I, Section 8, and the 14th Amendment", "blurb": "Congress sets a “uniform Rule of Naturalization,” and the 14th Amendment makes people born or naturalized in the United States citizens. Citizenship rules come from law, not from one ruler’s decision.", "charge": true}, "echo_courts": {"kind": "echo", "title": "Courts Created by Law", "sub": "Article III, Section 1", "blurb": "The judicial power belongs to one Supreme Court and the lower courts Congress chooses to create. Courts exist because Congress passes laws creating them, as it did in the Judiciary Act of 1789.", "charge": true}, "echo_appoint": {"kind": "echo", "title": "Appointments Clause", "sub": "Article II, Section 2", "blurb": "Congress creates offices by law, and the President nominates officers with the advice and consent of the Senate. Building a government payroll takes more than one person.", "charge": true}, "echo_posse": {"kind": "echo", "title": "Posse Comitatus Act", "sub": "Federal law, 1878", "blurb": "This law generally bars using the Army to carry out civilian law enforcement unless Congress or the Constitution allows it. It keeps the military from acting as a domestic police force.", "charge": true}, "echo_tenth": {"kind": "echo", "title": "Powers Kept by the States and the People", "sub": "10th Amendment", "blurb": "The national government has only the powers the Constitution gives it. Powers not delegated to it, and not forbidden to the states, are reserved to the states or the people.", "charge": true}, "echo_1983": {"kind": "echo", "title": "Section 1983", "sub": "Civil Rights Act of 1871", "blurb": "42 U.S.C. § 1983 lets people sue officials who violate their constitutional rights while acting for the government. Immunity doctrines limit some suits, and how far they should go is still debated.", "charge": true}, "echo_ports": {"kind": "echo", "title": "Equal Treatment of Ports", "sub": "Article I, Section 9", "blurb": "No regulation of commerce or revenue may give a “preference” to the ports of one state over those of another. Trade rules must treat the states’ harbors even-handedly.", "charge": true}, "echo_guarantee": {"kind": "echo", "title": "Guarantee Clause", "sub": "Article IV, Section 4", "blurb": "The United States guarantees every state “a Republican Form of Government,” meaning government by elected representatives. The Supreme Court has treated many Guarantee Clause questions as political, leaving much to Congress and the voters.", "charge": true}, "echo_dartmouth": {"kind": "echo", "title": "Dartmouth College v. Woodward", "sub": "Supreme Court, 1819", "blurb": "The Court held that New Hampshire could not rewrite Dartmouth’s royal charter, because a charter is a contract that the Constitution protects. It is a legal answer to rulers who rewrite charters at will.", "charge": true}, "echo_separation": {"kind": "echo", "title": "Separation of Powers", "sub": "Articles I, II, and III", "blurb": "Each branch has its own powers, and none can suspend or abolish the others. Congress makes laws, the President carries them out, and the courts decide cases.", "charge": true}, "echo_warpower": {"kind": "echo", "title": "Who Declares War", "sub": "Article I, Section 8; Article II, Section 2", "blurb": "Congress has the power to declare war and fund the armed forces, while the President commands them. The War Powers Resolution (1973) adds reporting rules, and the balance is still debated.", "charge": true}, "echo_takings": {"kind": "echo", "title": "Takings Clause", "sub": "5th Amendment", "blurb": "Private property may not be taken for public use without just compensation, and no one may be deprived of property without due process. The Declaration complained of property destroyed with no remedy at all.", "charge": true}, "echo_geneva": {"kind": "echo", "title": "Geneva Conventions", "sub": "1949, and the War Crimes Act (1996)", "blurb": "These treaties set legal limits on how armies treat civilians, prisoners, and the wounded. Serious violations are war crimes, and U.S. law makes some of them crimes in American courts.", "charge": true}, "echo_pow": {"kind": "echo", "title": "Protection of Prisoners of War", "sub": "Geneva Convention III, 1949", "blurb": "Prisoners of war cannot be forced to fight for the nation that captured them. Compelling a prisoner to serve in the enemy’s forces is a grave breach of the convention.", "charge": true}, "echo_worcester": {"kind": "echo", "title": "Worcester v. Georgia", "sub": "Supreme Court, 1832", "blurb": "The Court held that the Cherokee Nation was a distinct political community in which Georgia’s laws had no force. The ruling went unenforced and the Cherokee were removed, but it remains a foundation of tribal sovereignty in U.S. law.", "charge": true}, "bonus_scholar": {"kind": "bonus", "title": "Scholar of the Charges", "sub": "Bonus: five charges analyzed", "blurb": "You analyzed five of the Declaration’s charges, the most this assignment asks for. This distinction appears on your final essay PDF."}});
+["echo_veto","echo_judges","echo_armies","echo_quarter","echo_tax","echo_jury","echo_venue"].forEach(function(k){CARDS[k].charge=true;});
+/* a student can analyze one charge per scroll, so only that many charge cards are earnable */
+TOTAL=Object.keys(CARDS).filter(function(k){return !CARDS[k].charge;}).length+PEDS.length;
 
 /* ============ ENCOUNTERS (beats) ============ */
 function N(t){return{k:"n",t:t};}
@@ -430,6 +526,8 @@ var ENC=[
   N("Down at the east end of the plaza, a post rider from Virginia has just arrived with a printed copy of something Adams’s Virginia colleagues are very excited about.")];}},
  {id:"rider",npc:"rider",ch:2,after:function(){S.ch=3;},beats:function(){return[
   N("A post rider shakes road dust from his cloak. Virginia has just adopted a Declaration of Rights written mostly by George Mason, and news of it is traveling by newspaper and satchel through the colonies that June."),
+  N("Before you test the Declaration’s ideals against the law of today, take a minute with a quick map of the rights Americans later wrote into the Constitution. The Bill of Rights was added in 1791, fifteen years after the Declaration, and this game keeps pointing back to it. You can reopen the list any time in your satchel."),
+  {k:"list",name:"The Bill of Rights, in brief",intro:"The first ten amendments, ratified in 1791:",items:BOR,outro:"Later amendments will come up too, such as the 13th, 14th, 15th, and 19th. They are in your satchel under Bill of Rights."},
   Q("mason1"),
   L("Natural law and positive law","Natural law is the idea that some rights exist by nature and reason, whatever a government says. Positive law is the rules governments actually enact and enforce. The Declaration argues from natural law. Courts today apply positive law, such as the 14th Amendment, which later wrote part of that argument into enforceable text."),
   MC("rider.m",{prompt:"Which of these is the closest legal descendant of “all men are created equal” in today’s law?",opts:[
@@ -472,8 +570,17 @@ var ENC=[
    opt("The presidential veto.",0,"The veto blocks a bill. It does not change the structure of government."),
    opt("The grand jury.",0,"A grand jury decides whether to bring criminal charges. It does not change government.")],card:"echo_art5"}),
   HB("sherman.h",HL_CONSENT),
-  NT("note1",{title:"Chambers: analyze the Preamble",min:30,pts:50,prompt:"Write your analysis of the Preamble in your own words, 4 to 6 sentences. What core values, principles, or ethics does it present? How does it justify the need for independence? Use at least two cards from your satchel as evidence.",store:function(t){S.note1=t;}}),
-  N("The Preamble is done. Next come the charges, the facts the committee will submit “to a candid world.” Scrolls bearing them lie on pedestals across the yard to the south. Examine at least three.")];}},
+  NT("note1",{title:"Chambers: analyze the Preamble",min:30,pts:50,prompt:"Write your analysis of the Preamble in your own words, 4 to 6 sentences. What core values, principles, or ethics does it present? How does it justify the need for independence? Use at least two cards from your satchel as evidence. For a reminder of the rights we protect today, open your satchel and read the Bill of Rights tab.",store:function(t){S.note1=t;}}),
+  N("The Preamble is done. Next come the charges, the facts the committee will submit “to a candid world.” The Declaration lists twenty-seven of them. Before you choose which ones to explain, the committee will read them all aloud. Find Robert R. Livingston in front of the State House. Afterward, each scroll in the yard to the south shows the full list. Choose and explain at least three. Explain five and you earn a special bonus.")];}},
+ {id:"reading",npc:"livingston",ch:5,beats:function(){return[
+  N("Robert R. Livingston of New York, a member of the Committee of Five, waves you over. Before you choose which charges to analyze, he says, you should hear all of them aloud, the way a court hears a complaint read. The five members of the committee that drafted the Declaration will take turns. (No record says who read which line, so this reading is the game’s dramatization. The words are the Declaration’s own. The Declaration was first read to the public in Philadelphia on July 8, 1776.)"),
+  {k:"q",s:{who:"Thomas Jefferson",role:"Opening the list of charges (dramatized reading)",when:"The Declaration, July 4, 1776",kind:"Primary source",retro:false,text:"The history of the present King of Great Britain is a history of repeated injuries and usurpations, all having in direct object the establishment of an absolute Tyranny over these States. To prove this, let Facts be submitted to a candid world."}},
+  RD("Thomas Jefferson","Reading charges 1 to 6 (dramatized reading)",1,6),
+  RD("John Adams","Reading charges 7 to 12 (dramatized reading)",7,12),
+  RD("Benjamin Franklin","Reading charges 13 to 17 (dramatized reading)",13,17),
+  RD("Roger Sherman","Reading charges 18 to 22 (dramatized reading)",18,22),
+  RD("Robert R. Livingston","Reading charges 23 to 27 (dramatized reading)",23,27),
+  N("That is the whole list: twenty-seven charges. Notice how many concern who makes the laws, who judges, and who commands the army. Now choose. At each scroll in the yard to the south you will pick one charge to explain, and you need at least three. Think about which ones connect to something you know from today’s law or from the colonists’ lives. Explain five and you earn a special bonus.")];}},
  {id:"franklin",npc:"franklin",ch:6,after:function(){S.ch=7;},beats:function(){return[
   N("Benjamin Franklin sits under the big tree with a book he is not reading. He is seventy, he has the gout, and he has already seen the draft go before Congress for editing. Jefferson’s rough draft, in fact, survives with Franklin’s handwriting on it. (The change to “self-evident” is generally credited to him.)"),
   Q("franklin"),
@@ -570,7 +677,7 @@ var IDLE={
 
 /* ============ STATE ============ */
 var KEY="committee_of_five_rpg_v1";
-function fresh(){return{name:"",started:false,ch:0,x:28*T+8,y:15*T+8,dir:"d",pts:0,cards:{},b:{},enc:{},g:{},note1:"",refl:"",done:false};}
+function fresh(){return{name:"",started:false,ch:0,x:28*T+8,y:15*T+8,dir:"d",pts:0,cards:{},b:{},enc:{},g:{},ped:{},gOrder:[],bonus5:false,note1:"",refl:"",done:false};}
 function load(){try{var r=localStorage.getItem(KEY);if(r)return Object.assign(fresh(),JSON.parse(r));}catch(e){}return fresh();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 var S=load();
@@ -730,7 +837,7 @@ var gateTiles=[[16,29],[16,30]];
   for(var fy=24;fy<=35;fy++){setSolid(3,fy,1,1);if(fy!==29&&fy!==30)setSolid(16,fy,1,1);}
   gateTiles.forEach(function(g){setSolid(g[0],g[1],1,1);});
   /* pedestals */
-  GRIEVANCES.forEach(function(g){PROPS.push({k:"ped",x:g.at[0]*T+8,y:g.at[1]*T+14,g:g.id});setSolid(g.at[0],g.at[1],1,1);});
+  PEDS.forEach(function(g){PROPS.push({k:"ped",x:g.at[0]*T+8,y:g.at[1]*T+14,g:g.id});setSolid(g.at[0],g.at[1],1,1);});
 })();
 function gateOpen(){return S.ch>=10;}
 function updateGate(){gateTiles.forEach(function(g){grid[g[1]*MW+g[0]]=gateOpen()?0:1;});}
@@ -882,19 +989,20 @@ window.addEventListener("keydown",function(e){
   var k=e.key;
   if(titleOpen)return;
   var tgt=e.target&&e.target.tagName;
-  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}return;}
+  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}else if((k==="e"||k==="E")&&tgt==="BUTTON"){e.preventDefault();e.target.click();}return;}
   if(!$("dlg").hidden){
     if(k==="Escape"){e.preventDefault();openMenu();return;}
-    if((k==="z"||k==="Z")&&tgt!=="TEXTAREA"&&tgt!=="INPUT"){var g=$("dlg").querySelector(".go:not([disabled])");if(g){e.preventDefault();g.click();}}
+    if((k==="z"||k==="Z"||k==="e"||k==="E")&&tgt!=="TEXTAREA"&&tgt!=="INPUT"){var ae=document.activeElement,g=(ae&&ae.tagName==="BUTTON"&&$("dlg").contains(ae)&&!ae.disabled&&ae.getAttribute("aria-disabled")!=="true")?ae:$("dlg").querySelector(".go:not([disabled])");if(g){e.preventDefault();g.click();}}
     else if(k==="ArrowDown"||k==="ArrowUp"){var os=[].slice.call($("dlg").querySelectorAll(".opt"));if(os.length){e.preventDefault();var i=os.indexOf(document.activeElement);i=k==="ArrowDown"?Math.min(os.length-1,i+1):Math.max(0,i<0?0:i-1);os[i].focus();}}
     return;
   }
-  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}return;}
+  if(!$("menu").hidden){if(k==="Escape"){e.preventDefault();closeMenu();}else if((k==="e"||k==="E")&&tgt==="BUTTON"){e.preventDefault();e.target.click();}return;}
   if(k==="Escape"||k==="m"||k==="M"){e.preventDefault();openMenu();return;}
-  if(k==="z"||k==="Z"||k==="Enter"||k===" "){e.preventDefault();interact();return;}
+  if(k==="e"||k==="E"||k==="z"||k==="Z"||k==="Enter"||k===" "){e.preventDefault();interact();return;}
+  if(k==="Shift"){keys.run=true;return;}
   if(KM[k]){e.preventDefault();keys[KM[k]]=true;}
 });
-window.addEventListener("keyup",function(e){if(KM[e.key])keys[KM[e.key]]=false;});
+window.addEventListener("keyup",function(e){if(e.key==="Shift")keys.run=false;if(KM[e.key])keys[KM[e.key]]=false;});
 window.addEventListener("blur",function(){keys={};});
 [].forEach.call(document.querySelectorAll("#dpad button"),function(b){
   var d=KM[b.getAttribute("data-k")];
@@ -918,10 +1026,10 @@ function update(dt){
     player.moving=!!(dx||dy);
     if(dx||dy){
       if(dy&&!dx)player.dir=dy>0?"d":"u";else if(dx&&!dy)player.dir=dx>0?"r":"l";else if(dx)player.dir=dx>0?"r":"l";
-      var sp=66*dt,len=Math.sqrt(dx*dx+dy*dy);dx=dx/len*sp;dy=dy/len*sp;
+      var sp=66*dt*(keys.run?1.75:1),len=Math.sqrt(dx*dx+dy*dy);dx=dx/len*sp;dy=dy/len*sp;
       if(!blockedAt(player.x+dx,player.y))player.x+=dx;
       if(!blockedAt(player.x,player.y+dy))player.y+=dy;
-      player.anim+=dt*7;
+      player.anim+=dt*(keys.run?11:7);
     } else player.anim=0;
   } else player.moving=false;
   /* wanderers */
@@ -959,20 +1067,58 @@ function npcTalk(n){
   openDlg([N(IDLE[n.id]||"They nod to you.")]);
 }
 function startEnc(e){openDlg(e.beats(),function(){S.enc[e.id]=1;if(e.after)e.after();updateGate();save();refreshHud();});}
+var BOR=[
+ ["1st Amendment","Freedom of religion, speech, the press, assembly, and petitioning the government."],
+ ["2nd Amendment","The right to keep and bear arms."],
+ ["3rd Amendment","No soldiers quartered in your home in peacetime without your consent."],
+ ["4th Amendment","No unreasonable searches and seizures. Warrants need probable cause."],
+ ["5th Amendment","Grand jury, no double jeopardy, no forced self-incrimination, due process of law, and payment when property is taken."],
+ ["6th Amendment","In criminal cases: a speedy, public, impartial jury trial, notice of the charges, the right to confront witnesses, and a lawyer."],
+ ["7th Amendment","Jury trial in many civil cases."],
+ ["8th Amendment","No excessive bail or fines, and no cruel and unusual punishments."],
+ ["9th Amendment","Rights not listed in the Constitution are still kept by the people."],
+ ["10th Amendment","Powers not given to the national government are kept by the states or the people."]];
+var LATER=[
+ ["13th Amendment (1865)","Ended slavery and involuntary servitude, except as punishment for a crime."],
+ ["14th Amendment (1868)","Citizenship, due process, and equal protection of the laws for every person."],
+ ["15th Amendment (1870)","The right to vote cannot be denied because of race."],
+ ["19th Amendment (1920)","The right to vote cannot be denied because of sex."],
+ ["24th Amendment (1964)","No poll taxes in federal elections."],
+ ["26th Amendment (1971)","The voting age is 18."]];
+function readingDone(){return S.ch>5||!!(S.enc&&S.enc.reading);}
+function RD(who,role,a,b){return{k:"read",who:who,role:role,items:GRIEVANCES.slice(a-1,b).map(function(g){return{n:g.n,text:g.text};})};}
 function chargeCount(){return GRIEVANCES.filter(function(g){return S.g[g.id]&&S.g[g.id].done;}).length;}
+function chargeById(id){return GRIEVANCES.filter(function(g){return g.id===id;})[0];}
+function pedDone(pid){var cid=S.ped&&S.ped[pid];return !!(cid&&S.g[cid]&&S.g[cid].done);}
+/* the charges a student has finished, in the order they chose to do them */
+function chargeList(){
+  var ids=(S.gOrder||[]).filter(function(id){return S.g[id]&&S.g[id].done;});
+  GRIEVANCES.forEach(function(g){if(S.g[g.id]&&S.g[g.id].done&&ids.indexOf(g.id)<0)ids.push(g.id);});
+  return ids.map(chargeById);
+}
+function chargeBeats(cid){
+  var g=chargeById(cid),bs=[{k:"q",s:{who:"The Declaration of Independence",role:"Charge "+g.n+" of "+GRIEVANCES.length,when:"July 4, 1776",kind:"Primary source",retro:false,text:g.text}}];
+  if(g.ctx)bs.push(N("The colonists’ experience. "+g.ctx));
+  if(g.check)bs.push(MC(g.id+".m",g.check));
+  bs.push(NT(g.id+".n",{title:"In your own words",min:10,pts:g.check?50:100,
+    prompt:g.check?"In one or two sentences, explain how you see this charge addressed in our society today, or how the colonists’ experience influenced it.":"This charge has no card challenge, so the thinking is all yours. In one or two sentences, explain how you see this charge addressed in our society today, or how the colonists’ experience influenced it.",
+    store:function(t){S.g[g.id]={done:true,note:t};S.gOrder=S.gOrder||[];if(S.gOrder.indexOf(g.id)<0)S.gOrder.push(g.id);}}));
+  return bs;
+}
 function pedTalk(p){
-  var g=GRIEVANCES.filter(function(x){return x.id===p.g;})[0];
+  var pid=p.g;S.ped=S.ped||{};
   if(S.ch<5)return openDlg([N("A scroll rests on a stone pedestal, sealed with a pale ribbon. It isn’t ready to be read yet. Finish the Preamble first.")]);
-  if(S.g[g.id]&&S.g[g.id].done)return openDlg([N("You have already examined this charge: “"+g.title+".” Your note is saved in your satchel.")]);
-  openDlg([
-    N("A scroll from the Declaration’s list of charges lies on the pedestal."),
-    {k:"q",s:{who:"The Declaration of Independence",role:"Final text, list of grievances",when:"July 4, 1776",kind:"Primary source",retro:false,text:g.text}},
-    N("The colonists’ experience. "+g.ctx),
-    MC(g.id+".m",g.check),
-    NT(g.id+".n",{title:"In your own words",min:10,pts:50,prompt:"In one or two sentences, explain how you see this charge addressed in our society today, or how the colonists’ experience shaped it.",store:function(t){S.g[g.id]={done:true,note:t};}})
-  ],function(){
+  if(!readingDone())return openDlg([N("The scroll is still sealed. The committee has not yet read the charges aloud. Find Robert R. Livingston in front of the State House.")]);
+  var cid=S.ped[pid];
+  if(cid&&S.g[cid]&&S.g[cid].done){var g0=chargeById(cid);return openDlg([N("You analyzed charge "+g0.n+" here: “"+g0.title+".” Your explanation is saved in your satchel.")]);}
+  var beats=[N(cid?"You chose a charge on this scroll. Let’s finish it.":"A scroll lists the charges the Declaration brings against King George III. You get to choose which ones to explain.")];
+  if(cid)beats=beats.concat(chargeBeats(cid));else beats.push({k:"pick",pid:pid});
+  openDlg(beats,function(){
     if(S.ch===5&&chargeCount()>=3){S.ch=6;}
+    var five=chargeCount()>=5&&!S.bonus5;
+    if(five){S.bonus5=true;addPts(500);award("bonus_scholar");}
     save();refreshHud();
+    if(five)openDlg([N("Five charges analyzed. A small gold seal appears on your clerk’s sash: Scholar of the Charges. You earned a bonus of 500 points and a special card, and the distinction will appear on your final essay PDF.")]);
   });
 }
 function monTalk(){
@@ -989,8 +1135,8 @@ var run=null,typing=null;
 function setModal(on){modal=on;document.body.classList.toggle("modal",on);if(on)keys={};}
 function openDlg(beats,done){run={beats:beats,i:-1,done:done};$("dlg").hidden=false;setModal(true);nextBeat();}
 function closeDlg(){$("dlg").hidden=true;setModal(false);var d=run&&run.done;run=null;typing=null;if(d)d();}
-function skipBeat(b){return(b.k==="mc"||b.k==="hl"||b.k==="note")&&S.b[b.key]&&S.b[b.key].done;}
-function nextBeat(){run.i++;while(run.i<run.beats.length&&skipBeat(run.beats[run.i]))run.i++;if(run.i>=run.beats.length)return closeDlg();renderBeat(run.beats[run.i]);}
+function skipBeat(b){if(b.k==="pick")return !!(S.ped&&S.ped[b.pid]);return(b.k==="mc"||b.k==="hl"||b.k==="note")&&S.b[b.key]&&S.b[b.key].done;}
+function nextBeat(){if(!run)return;run.i++;while(run.i<run.beats.length&&skipBeat(run.beats[run.i]))run.i++;if(run.i>=run.beats.length)return closeDlg();renderBeat(run.beats[run.i]);}
 function typeText(node,text,cb){
   if(REDUCED){node.textContent=text;cb();return;}
   var i=0;node.textContent="";
@@ -1014,19 +1160,23 @@ function renderBeat(b){
   else if(b.k==="mc")mcBeat(b);
   else if(b.k==="hl")hlBeat(b);
   else if(b.k==="note")noteBeat(b);
+  else if(b.k==="pick")pickBeat(b);
+  else if(b.k==="list")listBeat(b);
+  else if(b.k==="read")readBeat(b);
 }
-function award(id){if(!id||S.cards[id])return;S.cards[id]=1;var c=CARDS[id];toast((c.kind==="ledger"?"Ledger card: ":c.kind==="insight"?"Insight card: ":"Echo card: ")+c.title);save();refreshHud();}
+function award(id){if(!id||S.cards[id])return;S.cards[id]=1;var c=CARDS[id];toast((c.kind==="ledger"?"Ledger card: ":c.kind==="insight"?"Insight card: ":c.kind==="bonus"?"Bonus: ":"Echo card: ")+c.title);save();refreshHud();}
 function addPts(n){S.pts=Math.max(0,S.pts+n);}
 var toastT;function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},3600);}
-function sealEl(k){return el("span",{class:"seal "+k,"aria-hidden":"true"},k==="echo"?"⚖":k==="ledger"?"≠":"✒");}
-function kindName(k){return k==="echo"?"Echo card":k==="ledger"?"Ledger card":"Insight card";}
+function sealEl(k){return el("span",{class:"seal "+k,"aria-hidden":"true"},k==="echo"?"⚖":k==="ledger"?"≠":k==="bonus"?"★":"✒");}
+function kindName(k){return k==="echo"?"Echo card":k==="ledger"?"Ledger card":k==="bonus"?"Bonus card":"Insight card";}
 
 function mcBeat(b){
   var ck=b.ck,st=S.b[b.key]||(S.b[b.key]={tries:0,wrong:[],done:false,gain:0});
   setName(ck.card&&CARDS[ck.card].kind==="echo"?"Find the echo in today’s law":"Think like a lawyer");
   var body=$("dBody"),fb=el("div",{class:"fb",role:"status","aria-live":"polite"}),wrap=el("div");
   body.append(el("p",null,ck.prompt),wrap,fb);
-  var btns=ck.opts.map(function(o,i){var bt=el("button",{type:"button",class:"opt"},o.t);bt.addEventListener("click",function(){pick(i);});wrap.append(bt);return bt;});
+  var btns=ck.opts.map(function(o,i){var bt=el("button",{type:"button",class:"opt"},o.t);bt.addEventListener("click",function(){pick(i);});return bt;});
+  (function(){var ord=ck.opts.map(function(_,i){return i;}),h=0,ks=String(b.key);for(var q=0;q<ks.length;q++)h=(h*31+ks.charCodeAt(q))|0;var rr=mulberry(h);for(var q2=ord.length-1;q2>0;q2--){var j=Math.floor(rr()*(q2+1)),tmp=ord[q2];ord[q2]=ord[j];ord[j]=tmp;}ord.forEach(function(i){wrap.append(btns[i]);});})();
   var go=goBtn("Continue ▼",function(){nextBeat();},true);
   function pick(i){if(st.done||st.wrong.indexOf(i)>=0)return;
     if(ck.opts[i].ok){st.done=true;st.gain=Math.max(25,100-50*st.tries);addPts(st.gain);if(ck.card)award(ck.card);}
@@ -1068,6 +1218,37 @@ function hlBeat(b){
   refresh();
 }
 function bankItems(){var out=[];Object.keys(SRC).forEach(function(k){var s=SRC[k];if(s.short)out.push(s);});return out;}
+function listBeat(b){
+  setName(b.name);var body=$("dBody");
+  if(b.intro)body.append(el("p",null,b.intro));
+  var ul=el("ul",{class:"refl"});b.items.forEach(function(it){ul.append(el("li",null,el("b",null,it[0]+". "),it[1]));});
+  body.append(ul);if(b.outro)body.append(el("p",{class:"cap"},b.outro));
+  goBtn("Continue ▼",function(){nextBeat();});
+}
+function readBeat(b){
+  setName(b.who);setTag({kind:"Primary source",retro:false});
+  var body=$("dBody");body.append(el("p",{class:"cap"},b.role));
+  var p=el("p",{class:"quote"});p.style.whiteSpace="pre-line";body.append(p);
+  typedBeat(p,b.items.map(function(g){return g.n+". "+g.text;}).join("\n"));
+}
+function pickBeat(b){
+  setName("Choose a charge to analyze");
+  var body=$("dBody"),taken={};Object.keys(S.ped||{}).forEach(function(k){taken[S.ped[k]]=1;});
+    body.append(el("p",null,"The Declaration lists "+GRIEVANCES.length+" charges against King George III. Choose the one you want to explain. "+(chargeCount()<3?"You need to analyze at least three in all, and five earns a special bonus.":chargeCount()<5?"You have the three you need. Analyze five to earn a special bonus.":"You have earned the five-charge bonus. You can analyze more if you like.")+" Analyzed so far: "+chargeCount()+"."));
+  var list=el("div",{class:"charges",role:"listbox","aria-label":"Charges against King George III"}),sel=null,btns=[];
+  var go=el("button",{class:"go",type:"button",disabled:true},"Choose a charge");
+  GRIEVANCES.forEach(function(g){
+    var used=!!taken[g.id],sn=g.text.length>104?g.text.slice(0,101).replace(/\s+\S*$/,"")+"…":g.text;
+    var bt=el("button",{type:"button",class:"opt chg"+(used?" used":""),role:"option","aria-selected":"false","aria-disabled":used?"true":"false"},
+      el("b",null,g.n+". "+g.title),el("span",{class:"cap"},"“"+sn+"”"),used?el("span",{class:"chgtag"},"Already chosen"):null);
+    bt.addEventListener("click",function(){if(used)return;sel=g;btns.forEach(function(x){x.classList.remove("sel");x.setAttribute("aria-selected","false");});bt.classList.add("sel");bt.setAttribute("aria-selected","true");go.disabled=false;go.textContent="Analyze charge "+g.n+" ▼";});
+    btns.push(bt);list.append(bt);
+  });
+  body.append(list);
+  var later=el("button",{class:"later",type:"button",onclick:function(){closeDlg();}},"Not yet");
+  go.addEventListener("click",function(){if(!run||!sel||go.disabled)return;S.ped=S.ped||{};S.ped[b.pid]=sel.id;save();var nb=chargeBeats(sel.id);run.beats.splice.apply(run.beats,[run.i+1,0].concat(nb));nextBeat();});
+  $("dFoot").replaceChildren(later,go);
+}
 function noteBeat(b){
   var o=b.o,st=S.b[b.key]||(S.b[b.key]={done:false,text:""});setName(o.title);
   var ta=el("textarea",{rows:o.min>=100?"9":"5","aria-label":o.title});ta.value=st.text||"";
@@ -1080,7 +1261,7 @@ function noteBeat(b){
   body.append(el("p",{class:"cap"},"Tip: press Esc (or the Satchel button) to look at your cards, draft, and notes while you write. Your writing stays saved."));
   body.append(ta,cnt);
   var go=goBtn("Save note",function(){if(go.disabled)return;st.done=true;st.text=ta.value;addPts(o.pts||50);o.store(ta.value);save();refreshHud();nextBeat();},true);
-  var sb=el("button",{class:"go",type:"button",onclick:function(){st.text=ta.value;save();openMenu();}},"Open satchel");$("dFoot").prepend(sb);
+  var sb=el("button",{class:"later",type:"button",onclick:function(){st.text=ta.value;save();openMenu();}},"Open satchel");$("dFoot").prepend(sb);
   function upd(){var n=wc(ta.value);cnt.textContent=n+" words"+(n>=o.min?"":" ("+o.min+" needed)");cnt.className="wc"+(n>=o.min?" ok":"");go.disabled=n<o.min;}
   ta.addEventListener("input",function(){st.text=ta.value;save();upd();});
   upd();setTimeout(function(){try{ta.focus({preventScroll:true});}catch(e){}},0);
@@ -1096,7 +1277,7 @@ function objective(){
    "A post rider from Virginia waits at the east end of the plaza, near the lamp.",
    "Visit Thomas Jefferson at the Graff House, on the east side.",
    "Find Roger Sherman near the State House steps. Then write your Preamble analysis.",
-   "Examine at least three charge scrolls on the pedestals in the yard to the south ("+chargeCount()+"/3).",
+   readingDone()?"At the scrolls on the pedestals in the yard to the south, choose charges from the list and explain at least three ("+chargeCount()+"/3). Explain five for a special bonus.":"Hear the committee read the charges aloud: speak with Robert R. Livingston in front of the State House.",
    "Sit with Benjamin Franklin under the big tree in the yard.",
    "Return to Thomas Jefferson at the Graff House.",
    "Visit the pamphlet seller’s stall on the lower sidewalk.",
@@ -1121,9 +1302,9 @@ var DRAFT=[
 ]);
 function caseText(){
   var L=[];L.push("CASE FILE: THE COMMITTEE OF FIVE (WORLD EDITION)");L.push("Clerk: "+(S.name||"Anonymous"));
-  L.push("Points: "+S.pts+"   Binder: "+Object.keys(S.cards).length+" of "+TOTAL+" cards");L.push("");
+  L.push("Points: "+S.pts+"   Binder: "+Object.keys(S.cards).length+" of "+TOTAL+" cards");if(S.bonus5)L.push("Distinction earned: Scholar of the Charges (five charges analyzed)");L.push("");
   L.push("PART 1. ANALYSIS OF CORE IDEAS");L.push("The Preamble");L.push(S.note1||"(not written)");L.push("");L.push("The charges I examined");
-  GRIEVANCES.forEach(function(g){var gs=S.g[g.id];if(!gs||!gs.done)return;L.push("- “"+g.text+"”");L.push("  Today: "+CARDS[g.check.card].title+" ("+CARDS[g.check.card].sub+")");L.push("  My explanation: "+gs.note);});
+  chargeList().forEach(function(g){var gs=S.g[g.id];L.push("- Charge "+g.n+": “"+g.text+"”");if(g.check)L.push("  Today: "+CARDS[g.check.card].title+" ("+CARDS[g.check.card].sub+")");L.push("  My explanation: "+gs.note);});
   L.push("");L.push("PART 2. CONTRADICTION LEDGER");
   var led=Object.keys(S.cards).filter(function(k){return CARDS[k].kind==="ledger";});if(!led.length)L.push("(none logged)");
   led.forEach(function(k){L.push("- "+CARDS[k].title+": "+CARDS[k].blurb);});
@@ -1139,7 +1320,7 @@ function copyBtn(ta,txt){
     try{navigator.clipboard.writeText(txt).then(ok,fb);}catch(e){fb();}});
   return b;
 }
-var TABS=["Draft","Binder","Journal","Case file"],curTab=0;
+var TABS=["Draft","Binder","Journal","Case file","Bill of Rights"],curTab=0;
 function openMenu(){$("menu").hidden=false;setModal(true);$("mClose").textContent=$("dlg").hidden?"Close":"Back to writing";drawTabs();}
 function closeMenu(){$("menu").hidden=true;var dlgOpen=!$("dlg").hidden;setModal(dlgOpen);if(dlgOpen){var t=$("dlg").querySelector("textarea");if(t){try{t.focus({preventScroll:true});}catch(e){}}}}
 function drawTabs(){
@@ -1153,22 +1334,35 @@ function drawTabs(){
     if(!any)b.append(el("p",null,"A blank page. Speak with the people in Philadelphia and the first lines of the Preamble will appear here."));
   } else if(curTab===1){
     b.append(el("p",{class:"cap"},Object.keys(S.cards).length+" of "+TOTAL+" cards found. Echo cards connect an ideal to today’s law. Ledger cards mark contradictions in 1776. Insight cards record a lawyer’s skill."));
-    [["echo","Echo cards"],["ledger","Ledger cards"],["insight","Insight cards"]].forEach(function(pr){
-      var keys2=Object.keys(CARDS).filter(function(k){return CARDS[k].kind===pr[0];}),got=keys2.filter(function(k){return S.cards[k];}).length;
+    [["echo","Echo cards"],["ledger","Ledger cards"],["insight","Insight cards"],["bonus","Bonus"]].forEach(function(pr){
+      var all=Object.keys(CARDS).filter(function(k){return CARDS[k].kind===pr[0];}),keys2=all.filter(function(k){return !CARDS[k].charge;}),chg=all.filter(function(k){return CARDS[k].charge;});
+      var got=keys2.filter(function(k){return S.cards[k];}).length;
+      function slot(k){var c=CARDS[k];return el("div",{class:"slot got"},sealEl(c.kind),el("div",null,el("b",null,c.title),el("span",{class:"s"},c.sub),el("span",{class:"bl"},c.blurb)));}
       b.append(el("h3",null,pr[1]+" ("+got+"/"+keys2.length+")"));var grid=el("div",{class:"slots"});
-      keys2.forEach(function(k){var c=CARDS[k];
-        if(S.cards[k])grid.append(el("div",{class:"slot got"},sealEl(c.kind),el("div",null,el("b",null,c.title),el("span",{class:"s"},c.sub),el("span",{class:"bl"},c.blurb))));
-        else grid.append(el("div",{class:"slot"},el("span",{class:"seal empty","aria-hidden":"true"},"?"),el("div",null,el("b",null,"Not found yet"),el("span",{class:"s"},pr[0]==="echo"?"Match an ideal to today’s law":pr[0]==="ledger"?"Highlight a contradiction":"Think like a lawyer"))));});
-      b.append(grid);});
+      keys2.forEach(function(k){
+        if(S.cards[k])grid.append(slot(k));
+        else grid.append(el("div",{class:"slot"},el("span",{class:"seal empty","aria-hidden":"true"},"?"),el("div",null,el("b",null,"Not found yet"),el("span",{class:"s"},pr[0]==="echo"?"Match an ideal to today’s law":pr[0]==="ledger"?"Highlight a contradiction":pr[0]==="bonus"?"Analyze five charges":"Think like a lawyer"))));});
+      b.append(grid);
+      if(chg.length){var earned=chg.filter(function(k){return S.cards[k];});
+        b.append(el("h3",null,"Charge cards ("+earned.length+" earned)"));
+        if(!earned.length)b.append(el("p",{class:"cap"},"Each charge you analyze earns the card for its challenge. You can analyze up to "+PEDS.length+" charges, one per scroll."));
+        var g2=el("div",{class:"slots"});earned.forEach(function(k){g2.append(slot(k));});b.append(g2);}
+    });
   } else if(curTab===2){
     var ip=function(k){return S.b[k]&&!S.b[k].done&&S.b[k].text?S.b[k].text+"  (draft in progress)":"";};
     b.append(el("h3",null,"Preamble analysis"),el("p",null,S.note1||ip("note1")||"Not written yet. Roger Sherman will ask for it."));
-    b.append(el("h3",null,"Charges examined"));
+    b.append(el("h3",null,"Charges examined"));b.append(el("p",{class:"cap"},"Charges analyzed: "+chargeCount()+". Three move the story along, and five earns a special bonus."+(S.bonus5?" Bonus earned: Scholar of the Charges (shown on your essay PDF).":"")));
     var gn=GRIEVANCES.filter(function(g){return S.g[g.id]&&S.g[g.id].done;});
     if(!gn.length)b.append(el("p",null,"None yet."));
     gn.forEach(function(g){b.append(el("p",null,el("b",null,g.title+": "),S.g[g.id].note));});
     GRIEVANCES.forEach(function(g){var t=ip(g.id+".n");if(t&&!(S.g[g.id]&&S.g[g.id].done))b.append(el("p",null,el("b",null,g.title+": "),t));});
     b.append(el("h3",null,"Final reflection"),el("p",null,S.refl||ip("refl")||"Not written yet. The monument in the Hall of Echoes will ask for it."));
+  } else if(curTab===4){
+    b.append(el("h3",null,"The Bill of Rights, in brief"));
+    b.append(el("p",{class:"cap"},"The first ten amendments, ratified in 1791, fifteen years after the Declaration. This is a quick map of the rights our legal system protects today, and the game keeps pointing back to it."));
+    var ul1=el("ul",{class:"refl"});BOR.forEach(function(it){ul1.append(el("li",null,el("b",null,it[0]+". "),it[1]));});b.append(ul1);
+    b.append(el("h3",null,"Later amendments you will meet"));
+    var ul2=el("ul",{class:"refl"});LATER.forEach(function(it){ul2.append(el("li",null,el("b",null,it[0]+". "),it[1]));});b.append(ul2);
   } else {
     var txt=caseText(),ta=el("textarea",{rows:"14",readonly:true,"aria-label":"Case file text"});ta.value=txt;
     var cb=el("button",{class:"go",type:"button",onclick:function(){downloadCertificate();}},"Download completed essay (PDF)");
@@ -1209,7 +1403,7 @@ function pdfSafe(s){
 }
 function certCode(){
   var gs=Object.keys(S.g||{}).sort().map(function(k){return k+":"+((S.g[k]||{}).note||"");}).join("~");
-  var str=[S.name,S.pts,S.note1,S.refl,gs,Object.keys(S.cards||{}).length].join("|"),h=2166136261;
+  var str=[S.name,S.pts,S.note1,S.refl,gs,Object.keys(S.cards||{}).length,S.bonus5?"B5":""].join("|"),h=2166136261;
   for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
   var x=("00000000"+h.toString(16)).slice(-8).toUpperCase();return "CF-"+x.slice(0,4)+"-"+x.slice(4);
 }
@@ -1245,7 +1439,17 @@ function buildCertificate(){
   /* heading block: name and date, then the centered title */
   body();doc.text(name,M,y);y+=LH;doc.text(dateStr,M,y);y+=LH;
   y+=6;body("bold",16);doc.text("The Declaration of Independence",W/2,y,{align:"center"});y+=22;
-  body("bold",14);doc.text("Analysis and Reflection",W/2,y,{align:"center"});y+=LH+16;
+  body("bold",14);doc.text("Analysis and Reflection",W/2,y,{align:"center"});y+=LH+14;
+  /* special distinction for analyzing five charges */
+  if(S.bonus5){
+    var bx=M+30,bw=TW-60,by=y-4;
+    doc.setDrawColor(150,110,30);doc.setLineWidth(1.3);doc.roundedRect(bx,by,bw,38,4,4);
+    var cxs=bx+24,cys=by+19,sp=[];for(var si=0;si<10;si++){var sr=si%2?4.6:11.5,sa=-Math.PI/2+si*Math.PI/5;sp.push([cxs+Math.cos(sa)*sr,cys+Math.sin(sa)*sr]);}
+    doc.setFillColor(190,140,30);doc.lines(sp.slice(1).map(function(p,i){return[p[0]-sp[i][0],p[1]-sp[i][1]];}),sp[0][0],sp[0][1],[1,1],"F",true);
+    body("bold",11.5);doc.text("Distinction earned: Scholar of the Charges",bx+46,by+16);
+    body("italic",10);ink(GREY);doc.text("Analyzed five charges, the most this assignment asks for.",bx+46,by+30);
+    y+=38+20;
+  } else y+=2;
   /* Part 1 */
   heading("Analysis of Core Ideas",13,"bold",4);
   heading("The Preamble",12,"bolditalic",2);
@@ -1266,8 +1470,8 @@ function buildCertificate(){
   /* small game record at the end */
   y+=14;ensure(40);doc.setDrawColor(190,190,190);doc.setLineWidth(.6);doc.line(M,y,W-M,y);y+=14;
   body("normal",9);ink(GREY);
-  var rec="Completed in The Committee of Five  |  "+(S.pts||0)+" points  |  "+Object.keys(S.cards||{}).length+" of "+TOTAL+" cards  |  Completion code "+code;
-  doc.text(rec,W/2,y,{align:"center"});
+  var rec="Completed in The Committee of Five  |  "+(S.bonus5?"Bonus: Scholar of the Charges  |  ":"")+(S.pts||0)+" points  |  "+Object.keys(S.cards||{}).length+" of "+TOTAL+" cards  |  Completion code "+code;
+  doc.splitTextToSize(rec,TW).forEach(function(l,i){doc.text(l,W/2,y+i*11,{align:"center"});});
   /* running head on pages after the first */
   var total=doc.getNumberOfPages();
   for(var p=2;p<=total;p++){doc.setPage(p);body("normal",12);doc.text(name+"  "+p,W-M,M-18,{align:"right"});}
@@ -1295,18 +1499,25 @@ var camX=0,camY=0,time=0;
 function pxr(v){return Math.round(v);}
 function drawSprite(name,dir,frame,x,y,ghost,bob){
   var sh=sprite(name),fr=sh[dir][frame];
-  var dx=pxr(x-8),dy=pxr(y-29+(bob||0));
+  var dx=pxr(x-8),dy=pxr(y-29+(bob||0));if(!ghost)castImage(fr,x,y,-8,-29,.85);
   ctx.fillStyle="rgba(10,20,10,.32)";ctx.beginPath();ctx.ellipse(pxr(x),pxr(y)-1,6,2.6,0,0,6.3);ctx.fill();
   if(ghost){ctx.globalAlpha=.82;}
   ctx.drawImage(fr,dx,dy);ctx.globalAlpha=1;
 }
+/* ---------- cinematic lighting: a low sun casts hard shadows, and dusk is lit by lamps ---------- */
+var SIL=typeof Map!=="undefined"?new Map():null,SHX=.55,SHY=.32,SHA=.36,lightC=document.createElement("canvas");lightC.width=W;lightC.height=H;var lx=lightC.getContext("2d");
+function silhouette(cvs){var s=SIL.get(cvs);if(s)return s;s=document.createElement("canvas");s.width=cvs.width;s.height=cvs.height;var c=s.getContext("2d");c.drawImage(cvs,0,0);c.globalCompositeOperation="source-in";c.fillStyle="#0a0e22";c.fillRect(0,0,s.width,s.height);SIL.set(cvs,s);return s;}
+/* project an upright image onto the ground, away from the sun (up-left of the scene) */
+function castImage(cvs,bx,by,ox,oy,k){ctx.save();ctx.translate(bx,by);ctx.transform(1,0,-SHX*(k||1),-SHY*(k||1),0,0);ctx.globalAlpha=SHA;ctx.drawImage(silhouette(cvs),ox,oy);ctx.restore();}
+function castBox(bx,by,w,h,k){ctx.save();ctx.translate(bx,by);ctx.transform(1,0,-SHX*(k||1),-SHY*(k||1),0,0);ctx.globalAlpha=SHA;ctx.fillStyle="#0a0e22";ctx.fillRect(-w/2,-h,w,h);ctx.restore();}
+var PROP_SH={bench:[16,10],barrel:[8,10],crate:[12,11],stall:[46,30],ped:[12,15],monument:[16,38],hitch:[24,10]};
 function lights(){
   var L=[];
-  LAMPS.forEach(function(l){L.push({x:l.x,y:l.y-22,r:46,c:"255,205,120",a:.5+.1*Math.sin(time*3+l.x)});});
-  PROPS.forEach(function(p){if(p.k==="ped"){var done=S.g[p.g]&&S.g[p.g].done;if(S.ch>=5)L.push({x:p.x,y:p.y-12,r:26,c:done?"140,230,170":"255,225,130",a:.45+.15*Math.sin(time*3+p.x)});}
+  var tn=Math.min(1,S.ch/10);LAMPS.forEach(function(l){L.push({x:l.x,y:l.y-12,r:70+20*tn,c:"255,196,110",a:(.30+.70*tn)*(.96+.04*Math.sin(time*3+l.x)),lamp:1});});
+  PROPS.forEach(function(p){if(p.k==="ped"){var done=pedDone(p.g);if(S.ch>=5&&readingDone())L.push({x:p.x,y:p.y-12,r:26,c:done?"140,230,170":"255,225,130",a:.45+.15*Math.sin(time*3+p.x)});}
     if(p.k==="monument"&&gateOpen())L.push({x:p.x,y:p.y-14,r:S.ch>=11?70:40,c:"160,200,255",a:.4+.12*Math.sin(time*2)});});
   NPCS.forEach(function(n){if(n.ghost&&gateOpen())L.push({x:n.x,y:n.y-12,r:30,c:"150,200,255",a:.4+.1*Math.sin(time*2+n.ph)});});
-  if(S.ch>=7)BLD.forEach(function(b){L.push({x:(b.x+b.w/2)*T,y:(b.y+b.h)*T-8,r:b.w*6,c:"255,190,110",a:.16});});
+  if(S.ch>=7)BLD.forEach(function(b){L.push({x:(b.x+b.w/2)*T,y:(b.y+b.h)*T-8,r:b.w*6,c:"255,190,110",a:.2});});
   return L;
 }
 function render(){
@@ -1314,13 +1525,14 @@ function render(){
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
   ctx.drawImage(ground,camX,camY,W,H,0,0,W,H);
   ctx.save();ctx.translate(-camX,-camY);
-  /* building shadows on plaza */
-  BLD.forEach(function(b){var bx=b.x*T,by=(b.y+b.h)*T,gw=b.w*T;var g=ctx.createLinearGradient(0,by,0,by+26);g.addColorStop(0,"rgba(30,20,60,.32)");g.addColorStop(1,"rgba(30,20,60,0)");ctx.fillStyle=g;ctx.fillRect(bx+6,by,gw+4,26);});
+  /* the sun sinks as the story goes on, so shadows lengthen and deepen */
+  var sun=Math.min(1,S.ch/10);SHX=.5+.5*sun;SHY=.28+.12*sun;SHA=.44+.12*sun;
+  BLD.forEach(function(b){var im=BCV[b.id];castImage(im,b.x*T,(b.y+b.h)*T,0,-im.height);});
   var items=[];
   BLD.forEach(function(b){items.push({y:(b.y+b.h)*T,d:function(){ctx.drawImage(BCV[b.id],b.x*T,b.y*T);}});});
-  TREES.forEach(function(t){items.push({y:t.y,d:function(){var cvv=TREE_CV[t.v],sway=REDUCED?0:Math.round(Math.sin(time*1.2+t.x*.1)*.6);ctx.fillStyle="rgba(10,20,10,.3)";ctx.beginPath();ctx.ellipse(t.x+2,t.y,t.big?18:11,t.big?5:3.4,0,0,6.3);ctx.fill();ctx.drawImage(cvv,pxr(t.x-cvv.width/2+sway),pxr(t.y-cvv.height+2));}});});
-  LAMPS.forEach(function(l){items.push({y:l.y,d:function(){R(ctx,l.x-3,l.y-2,6,2,"#2b2a33");R(ctx,l.x-1,l.y-22,2,21,"#2b2a33");R(ctx,l.x-4,l.y-29,8,7,"#23232c");R(ctx,l.x-3,l.y-28,6,5,"#f6d27a");R(ctx,l.x-4,l.y-30,8,2,"#23232c");}});});
-  PROPS.forEach(function(p){items.push({y:p.y,d:function(){drawProp(p);}});});
+  TREES.forEach(function(t){items.push({y:t.y,d:function(){var cvv=TREE_CV[t.v],sway=REDUCED?0:Math.round(Math.sin(time*1.2+t.x*.1)*.6);castImage(cvv,t.x,t.y,-cvv.width/2,-(cvv.height-2),.9);ctx.fillStyle="rgba(10,20,10,.3)";ctx.beginPath();ctx.ellipse(t.x+2,t.y,t.big?18:11,t.big?5:3.4,0,0,6.3);ctx.fill();ctx.drawImage(cvv,pxr(t.x-cvv.width/2+sway),pxr(t.y-cvv.height+2));}});});
+  LAMPS.forEach(function(l){items.push({y:l.y,d:function(){ctx.save();ctx.translate(l.x,l.y);ctx.transform(1,0,-SHX,-SHY,0,0);ctx.globalAlpha=SHA;ctx.fillStyle="#0a0e22";ctx.fillRect(-1,-22,2,22);ctx.fillRect(-4,-30,8,8);ctx.restore();R(ctx,l.x-3,l.y-2,6,2,"#2b2a33");R(ctx,l.x-1,l.y-22,2,21,"#2b2a33");R(ctx,l.x-4,l.y-29,8,7,"#23232c");R(ctx,l.x-3,l.y-28,6,5,"#f6d27a");R(ctx,l.x-4,l.y-30,8,2,"#23232c");}});});
+  PROPS.forEach(function(p){items.push({y:p.y,d:function(){var sh=PROP_SH[p.k];if(sh)castBox(p.x,p.y,sh[0],sh[1]);drawProp(p);}});});
   NPCS.forEach(function(n){items.push({y:n.y,d:function(){var bob=n.ghost?Math.round(Math.sin(time*2+n.ph)*2)-3:(Math.sin(time*1.6+n.ph)>.85?-1:0);if(n.ghost&&!gateOpen())return;drawSprite(n.look,n.dir,0,n.x,n.y,n.ghost,bob);}});});
   WANDER.forEach(function(w){items.push({y:w.y,d:function(){drawSprite(w.look,w.dir,(w.vx||w.vy)?[0,1,0,2][Math.floor(w.anim)%4]:0,w.x,w.y);}});});
   items.push({y:player.y,d:function(){drawSprite("player",player.dir,player.moving?[0,1,0,2][Math.floor(player.anim)%4]:0,player.x,player.y);}});
@@ -1328,26 +1540,25 @@ function render(){
   items.forEach(function(it){it.d();});
   /* quest markers */
   NPCS.forEach(function(n){if(npcAvailable(n)){var yy=n.y-(34+(n.look==="jefferson"?3:0)|0)+Math.round(Math.sin(time*4)*1.5);diamond(n.x,yy);}});
-  PROPS.forEach(function(p){if(p.k==="ped"&&S.ch>=5&&!(S.g[p.g]&&S.g[p.g].done))diamond(p.x,p.y-24+Math.round(Math.sin(time*4+p.x)*1.5));if(p.k==="monument"&&S.ch===11)diamond(p.x,p.y-42+Math.round(Math.sin(time*4)*1.5));});
+  PROPS.forEach(function(p){if(p.k==="ped"&&S.ch>=5&&readingDone()&&!(pedDone(p.g)))diamond(p.x,p.y-24+Math.round(Math.sin(time*4+p.x)*1.5));if(p.k==="monument"&&S.ch===11)diamond(p.x,p.y-42+Math.round(Math.sin(time*4)*1.5));});
   /* open/closed gate */
   drawGate();
   ctx.restore();
-  /* lights */
+  /* lighting: ambient light that falls from daylight to blue dusk, with lamps and glows as pools of warm light */
+  var tn2=Math.min(1,S.ch/10),ar=Math.round(238-118*tn2),ag=Math.round(236-104*tn2),ab=Math.round(230-60*tn2);
+  lx.globalCompositeOperation="source-over";lx.fillStyle="rgb("+ar+","+ag+","+ab+")";lx.fillRect(0,0,W,H);
+  var LT=lights();
+  lx.globalCompositeOperation="lighter";
+  LT.forEach(function(l){var sx=l.x-camX,sy=l.y-camY;if(sx<-90||sx>W+90||sy<-90||sy>H+90)return;
+    var g=lx.createRadialGradient(sx,sy,0,sx,sy,l.r);g.addColorStop(0,"rgba("+l.c+","+Math.min(1,l.a).toFixed(3)+")");g.addColorStop(.5,"rgba("+l.c+","+(Math.min(1,l.a)*.5).toFixed(3)+")");g.addColorStop(1,"rgba("+l.c+",0)");lx.fillStyle=g;lx.fillRect(sx-l.r,sy-l.r,l.r*2,l.r*2);});
+  ctx.globalCompositeOperation="multiply";ctx.drawImage(lightC,0,0);
+  /* a hint of warm light on whatever the lamps reach */
   ctx.globalCompositeOperation="lighter";
-  lights().forEach(function(l){var sx=l.x-camX,sy=l.y-camY;if(sx<-80||sx>W+80||sy<-80||sy>H+80)return;var g=ctx.createRadialGradient(sx,sy,0,sx,sy,l.r);g.addColorStop(0,"rgba("+l.c+","+(l.a*.7).toFixed(3)+")");g.addColorStop(1,"rgba("+l.c+",0)");ctx.fillStyle=g;ctx.fillRect(sx-l.r,sy-l.r,l.r*2,l.r*2);});
-  /* light beams */
-  if(!REDUCED){for(var i=0;i<3;i++){var bx=40+i*110+Math.sin(time*.3+i)*12;var g2=ctx.createLinearGradient(bx,0,bx+60,H);g2.addColorStop(0,"rgba(255,230,170,.10)");g2.addColorStop(1,"rgba(255,230,170,0)");ctx.fillStyle=g2;ctx.beginPath();ctx.moveTo(bx,0);ctx.lineTo(bx+26,0);ctx.lineTo(bx+90,H);ctx.lineTo(bx+40,H);ctx.closePath();ctx.fill();}}
-  /* motes */
-  particles.forEach(function(p){if(!REDUCED){p.x+=p.vx*.016;p.y+=p.vy*.016;p.ph+=.03;}if(p.y<-2){p.y=H+2;p.x=Math.random()*W;}if(p.x<-2)p.x=W+2;if(p.x>W+2)p.x=-2;
-    ctx.fillStyle="rgba(255,240,190,"+(.25+.2*Math.sin(p.ph)).toFixed(2)+")";ctx.fillRect(pxr(p.x),pxr(p.y),p.s,p.s);});
+  LT.forEach(function(l){if(!l.lamp)return;var sx=l.x-camX,sy=l.y-camY;if(sx<-90||sx>W+90||sy<-90||sy>H+90)return;
+    var g=ctx.createRadialGradient(sx,sy+10,0,sx,sy+10,l.r*.6);g.addColorStop(0,"rgba(255,170,80,"+(.16*tn2).toFixed(3)+")");g.addColorStop(1,"rgba(255,170,80,0)");ctx.fillStyle=g;ctx.fillRect(sx-l.r,sy-l.r,l.r*2,l.r*2);});
   ctx.globalCompositeOperation="source-over";
   leaves.forEach(function(l){if(!REDUCED){l.x+=l.vx*.016;l.y+=l.vy*.016;l.ph+=.05;}if(l.y>H+4||l.x>W+4){l.x=-4-Math.random()*40;l.y=Math.random()*H*.6;}
-    ctx.fillStyle=(l.ph*3|0)%2?"#7da23a":"#b0833a";ctx.fillRect(pxr(l.x),pxr(l.y+Math.sin(l.ph)*2),2,1);});
-  /* grade: golden hour deepens over the story */
-  var tt=Math.min(1,S.ch/10),tr=Math.round(200+55*tt),tg=Math.round(222-32*tt),tb=Math.round(255-135*tt);
-  ctx.globalCompositeOperation="soft-light";ctx.fillStyle="rgba("+tr+","+tg+","+tb+","+(.38+.1*tt).toFixed(2)+")";ctx.fillRect(0,0,W,H);
-  ctx.globalCompositeOperation="multiply";var gt=ctx.createLinearGradient(0,0,0,H);gt.addColorStop(0,"rgba(120,140,220,.42)");gt.addColorStop(.45,"rgba(255,255,255,0)");gt.addColorStop(1,"rgba(255,230,200,.1)");ctx.fillStyle=gt;ctx.fillRect(0,0,W,H);
-  ctx.globalCompositeOperation="source-over";
+    ctx.fillStyle=(l.ph*3|0)%2?"#6d8f33":"#9d742f";ctx.fillRect(pxr(l.x),pxr(l.y+Math.sin(l.ph)*2),2,1);});
   dofC.drawImage(cv,0,0);bloomC.drawImage(cv,0,0);
 }
 function diamond(x,y){var c=ctx;x=pxr(x);y=pxr(y);R(c,x-1,y-3,2,1,"#fff3b0");R(c,x-2,y-2,4,1,"#f0cc72");R(c,x-3,y-1,6,2,"#f0cc72");R(c,x-2,y+1,4,1,"#c99a3a");R(c,x-1,y+2,2,1,"#a77a28");R(c,x-3,y-1,6,1,"#fff3b0");}
@@ -1359,7 +1570,7 @@ function drawProp(p){
   else if(p.k==="crate"){c.beginPath();c.ellipse(x,y-1,7,2.6,0,0,6.3);c.fill();R(c,x-6,y-11,12,11,"#9a7040");R(c,x-6,y-11,12,1,"#bf9460");R(c,x-6,y-11,1,11,"#6d4c28");R(c,x+5,y-11,1,11,"#6d4c28");R(c,x-6,y-6,12,1,"#6d4c28");R(c,x-1,y-11,2,11,"#7d5a30");}
   else if(p.k==="hitch"){R(c,x-12,y-8,24,1,"#4a3220");R(c,x-12,y-4,24,1,"#4a3220");R(c,x-12,y-10,2,10,"#5a4028");R(c,x+10,y-10,2,10,"#5a4028");}
   else if(p.k==="stall"){var sx=x-24;R(c,sx,y-30,48,14,"#f0e8d0");for(var i=0;i<6;i++)R(c,sx+i*8,y-30,4,14,"#a8332e");R(c,sx,y-17,48,2,"#7a2420");for(i=0;i<12;i++)R(c,sx+i*4,y-15,2,2,i%2?"#a8332e":"#f0e8d0");R(c,sx+2,y-14,2,14,"#5a4028");R(c,sx+44,y-14,2,14,"#5a4028");R(c,sx+2,y-8,44,8,"#8a6a44");R(c,sx+2,y-8,44,1,"#b08a5a");for(i=0;i<5;i++)R(c,sx+6+i*8,y-12,6,4,["#efe3b8","#e8d7a0","#f2ecd8","#dccd96","#efe3b8"][i]);}
-  else if(p.k==="ped"){var done=S.g[p.g]&&S.g[p.g].done;c.beginPath();c.ellipse(x,y-1,8,2.8,0,0,6.3);c.fill();R(c,x-6,y-6,12,6,"#b8b4a8");R(c,x-6,y-6,12,1,"#d8d4c8");R(c,x-4,y-10,8,4,"#cfcbbf");
+  else if(p.k==="ped"){var done=pedDone(p.g);c.beginPath();c.ellipse(x,y-1,8,2.8,0,0,6.3);c.fill();R(c,x-6,y-6,12,6,"#b8b4a8");R(c,x-6,y-6,12,1,"#d8d4c8");R(c,x-4,y-10,8,4,"#cfcbbf");
     var by=S.ch>=5?Math.round(Math.sin(time*2.4+x)*1):0;R(c,x-6,y-15+by,12,5,"#efe3b8");R(c,x-6,y-15+by,12,1,"#fff8dc");R(c,x-7,y-15+by,2,5,"#c9b077");R(c,x+5,y-15+by,2,5,"#c9b077");R(c,x-3,y-13+by,6,1,"#8a7a50");R(c,x-1,y-11+by,2,2,done?"#3fae6e":"#b02a2a");}
   else if(p.k==="monument"){var pl=gateOpen()?.5+.2*Math.sin(time*2):0;R(c,x-12,y-4,24,6,"#b8b4a8");R(c,x-12,y-4,24,1,"#d8d4c8");R(c,x-9,y-8,18,4,"#cfcbbf");R(c,x-6,y-32,12,24,"#dfe3ee");R(c,x-6,y-32,2,24,"#f4f6fb");R(c,x+4,y-32,2,24,"#aab0c4");R(c,x-4,y-36,8,4,"#dfe3ee");R(c,x-2,y-40,4,4,"#dfe3ee");R(c,x-1,y-43,2,3,"#f0cc72");
     if(S.ch>=11){c.fillStyle="rgba(240,204,114,"+(.5+pl*.5).toFixed(2)+")";for(var j=0;j<5;j++)R(c,x-4,y-28+j*4,8,1,"rgba(240,204,114,.8)");}}
@@ -1381,11 +1592,11 @@ function frame(ts){
   var dt=Math.min(.05,(ts-last)/1000||0);last=ts;time+=dt;
   update(dt);render();
   var t=nearest(),h=$("hint");
-  if(t&&!modal&&!titleOpen){var nm=t.kind==="npc"?t.o.name:t.kind==="ped"?"the scroll":t.kind==="mon"?"the monument":"the gate";h.hidden=false;h.textContent="Z / Enter: examine "+nm;}else h.hidden=true;
+  if(t&&!modal&&!titleOpen){var nm=t.kind==="npc"?t.o.name:t.kind==="ped"?"the scroll":t.kind==="mon"?"the monument":"the gate";h.hidden=false;h.textContent="E / Enter: examine "+nm;}else h.hidden=true;
   saveT+=dt;if(saveT>3){saveT=0;S.x=player.x;S.y=player.y;S.dir=player.dir;save();}
   requestAnimationFrame(frame);
 }
-function fit(){var w=$("stage").clientWidth,s=w/W;document.documentElement.style.setProperty("--b1",(s*.7).toFixed(2)+"px");document.documentElement.style.setProperty("--b2",(s*2.2).toFixed(2)+"px");}
+function fit(){var w=$("stage").clientWidth,s=w/W;document.documentElement.style.setProperty("--b1",(s*.26).toFixed(2)+"px");document.documentElement.style.setProperty("--b2",(s*1.1).toFixed(2)+"px");}
 window.addEventListener("resize",fit);
 
 /* ============ BOOT ============ */
@@ -1397,7 +1608,7 @@ function begin(){
     openDlg([
       N("Philadelphia, June 1776. The Second Continental Congress is meeting in the Pennsylvania State House, and a decision is coming that cannot be taken back."),
       N("You are a young clerk assigned to the Committee of Five, the men Congress has chosen to explain independence in writing. Walk the city, speak with the people involved, and test their words against the law. The quotes you read are real. The map is stylized and the narration is the game’s own."),
-      N("Walk with the arrow keys or WASD. Press Z, Enter, or Space near a person or scroll to talk. Press Esc to open your satchel, with your draft, your cards, and your notes. Golden diamonds mark who to talk to next.")]);
+      N("Walk with the arrow keys or WASD, and hold Shift to sprint. Press E, Z, Enter, or Space near a person or scroll to talk. Press Esc to open your satchel, with your draft, your cards, and your notes. Golden diamonds mark who to talk to next.")]);
   }
 }
 $("begin").addEventListener("click",begin);
