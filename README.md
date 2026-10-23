@@ -4,11 +4,15 @@ Students **choose one** of three ways to complete this assignment. All three ask
 
 | Option | What it is | Students submit |
 |---|---|---|
-| 1. 3D block-world game (`blocky-3d/`) | Explore a block-built Philadelphia, climb parkour trials, talk to the people involved. Needs WebGL. | Essay PDF from the game |
+| 1. 3D game, two looks (`blocky-3d/`, `storybook-third-person/`) | Explore Philadelphia in 3D, climb parkour trials, talk to the people involved. Block-world and storybook (Wind Waker style) both use a camera behind the player. Same story and assignment in each. Needs WebGL. | Essay PDF from the game |
 | 2. Pixel-art game (`pixel-art/`) | A walkable, top-down Philadelphia. Runs on almost any device, including phones. | Essay PDF from the game |
 | 3. Written assignment (`text-assignment/`) | The Word document: watch the video overview, read the primary source, and write the analysis and reflection. | The completed document |
 
 Students start at the landing page, `index.html`. It explains the three options, what each one asks for, how to choose, and how to turn the work in.
+
+## Keyboard-only play
+
+Every game can be played without a mouse. In dialogue: arrow keys (or W A S D) move between answers, highlighted phrases, charges and buttons; E, Z or Enter selects; number keys jump to an answer; in the charge list, typing a number such as 14 jumps to that charge, and PgUp/PgDn skip five; End jumps to the buttons; Ctrl+Enter saves what you are writing. Esc opens the satchel, where Left/Right (or 1 to 6) switch tabs and Up/Down move into the page. Closing the satchel returns you to where you were.
 
 ## What every option asks for
 
