@@ -1,11 +1,11 @@
 # The Declaration of Independence: Analysis and Reflection
 
-Students **choose one** of three ways to complete this assignment. All three ask for the same thinking, and students turn in one file on Google Classroom.
+Students **choose one** of four ways to complete this assignment. All three ask for the same thinking, and students turn in one file on Google Classroom.
 
 | Option | What it is | Students submit |
 |---|---|---|
-| 1. 3D game, two looks (`blocky-3d/`, `storybook-third-person/`) | Explore Philadelphia in 3D, climb parkour trials, talk to the people involved. Block-world and storybook (Wind Waker style) both use a camera behind the player. Same story and assignment in each. Needs WebGL. | Essay PDF from the game |
-| 2. Pixel-art game (`pixel-art/`) | A walkable, top-down Philadelphia. Runs on almost any device, including phones. | Essay PDF from the game |
+| 1. 3D game, two looks (`blocky-3d/`, `storybook-third-person/`) | Explore Philadelphia in 3D, climb parkour trials, talk to the people involved. Block-world and storybook (Wind Waker style) both use a camera behind the player. Same story and assignment in each. Needs WebGL. | Essay (Word document) from the game |
+| 2. Pixel-art game (`pixel-art/`) | A walkable, top-down Philadelphia. Runs on almost any device, including phones. | Essay (Word document) from the game |
 | 3. Written assignment (`text-assignment/`) | The Word document: watch the video overview, read the primary source, and write the analysis and reflection. | The completed document |
 
 Students start at the landing page, `index.html`. It explains the three options, what each one asks for, how to choose, and how to turn the work in.
@@ -29,7 +29,7 @@ index.html                  student-facing landing page (choose one of three opt
 blocky-3d/                  Option 1, the 3D game
 pixel-art/                  Option 2, the pixel-art game
 text-assignment/            Option 3, the Word document
-lib/                        three.js r128 and jsPDF 2.5.1, bundled so the games work if a CDN is blocked
+lib/                        three.js r128 and jsPDF 2.5.1, bundled so the games work if a CDN is blocked (jsPDF is no longer used; the essay is a Word document the game builds itself)
 .nojekyll                   tells GitHub Pages to serve files as they are
 ```
 
@@ -52,8 +52,24 @@ To test locally, run `python3 -m http.server 8000` in the repository folder and 
 ## Notes for teachers
 
 - **Saving.** Each game stores progress in the student’s own browser (localStorage), separately per game. It is not shared between devices, and nothing is sent to a server.
-- **The essay PDF.** It unlocks only after the final reflection. It is formatted like an essay (Times 12 point, 1.5 line spacing, indented paragraphs, a running head with the student’s name and page number) and is built in the browser and saved with a normal download. The completion code at the bottom is computed from the student’s work, so you can see it matches the writing in the file. It is not a security feature.
-- **Special characters.** Emoji and non-Latin scripts in a student’s writing are dropped or shown as "?" in the PDF. The game’s "Copy case file" option keeps everything as plain text.
+- **The essay Word document (.docx).** It unlocks only after the final reflection. It is formatted like an essay (Times 12 point, 1.5 line spacing, indented paragraphs, real Word headings, a running head with the student’s name and page number) and is built in the browser and saved with a normal download. The completion code at the bottom is computed from the student’s work, so you can see it matches the writing in the file. It is not a security feature.
+- **Special characters.** The Word document keeps accented letters, emoji and other scripts as typed. The game’s "Copy case file" option is still available as plain text.
 - **Platforming.** In the 3D game, Esc then **Play** has a Platforming assist switch that lets a student read the charge scrolls from the ground.
 - **Sources.** Quotes in the games are real and labeled primary or retrospective. The map is stylized, and the narration is the game’s own. The games were created by Claude with prompting and iteration.
 - **Fonts and libraries.** The games request two fonts from Google Fonts and fall back to system fonts if blocked. three.js and jsPDF are MIT licensed and included in `lib/`. The game text uses public-domain historical documents, plus one short excerpt from Dr. King’s 1963 speech.
+
+## The graphic novel journal (`journal/`)
+
+An illustrated, page-turning version of the same story, for students who would rather read, draw conclusions, and build something than play a game. It reuses the games' narration, primary-source quotes, legal-lens notes, check questions, the "mark the ledger" exercises, and the same writing prompts, so students do the same thinking in a different format.
+
+* **Read:** the story is told in five parts (June 1776 through the Hall of Echoes). Panels are drawn in code in an ink-and-halftone style, with a portrait of the speaker.
+* **Collect:** students clip quotes, lens notes, and dated clippings to a scrapbook and earn the same stamps as the games' cards.
+* **Write:** the Preamble analysis, three to five charges chosen from the 27 and explained, and the final reflection. Minimum word counts match the games, and examining five charges earns the Scholar of the Charges distinction.
+* **Assemble:** at the end of each part the student edits a newspaper front page: a headline they write, a picture they choose, and pinned clippings. These are bound into a printable book.
+* **Turn in:** the Word essay (identical in layout to the games' essay) unlocks when the final reflection is saved. The book can also be printed or saved as a PDF from the browser.
+
+Notes: progress saves in the student's browser, and headlines and journal text are not checked beyond word counts. The illustrations are stylized, and the narration is the game's own (no invented quotations are attributed to historical figures).
+
+## Screenshots
+
+The `screenshots/` folder holds JPEG screenshots of each version, with a small gallery page (`screenshots/index.html`) linked from the landing page. They are useful for showing students the options before they choose, or for a class presentation. The 3D screenshots are bird's-eye views.
