@@ -70,6 +70,10 @@ An illustrated, page-turning version of the same story, for students who would r
 
 Notes: progress saves in the student's browser, and headlines and journal text are not checked beyond word counts. The illustrations are stylized, and the narration is the game's own (no invented quotations are attributed to historical figures).
 
+## Quiz answer order
+
+Every multiple-choice question shuffles its answer choices, so the correct answer is not always in the same spot. Each student gets their own order, which stays the same if they leave and come back, so classmates cannot share "the answer is B" and a student's keyboard focus never starts on the correct choice. This applies to the pixel-art game, the blocky 3D game, the storybook 3D game, and the graphic novel journal.
+
 ## Screenshots
 
 The `screenshots/` folder holds JPEG screenshots of each version, with a small gallery page (`screenshots/index.html`) linked from the landing page. They are useful for showing students the options before they choose, or for a class presentation. The 3D screenshots are bird's-eye views.

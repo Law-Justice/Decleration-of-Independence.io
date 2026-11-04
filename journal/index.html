@@ -1080,10 +1080,8 @@ R.quiz=function(p){
   var ck=p.mc.ck,key=p.mc.key,st=S.b[key]||(S.b[key]={done:false,tries:0}),sec=el("section",{class:"quiz"});
   var box=el("div",{class:"qbox"},el("h2",null,"Check your understanding"),cameo(p.npc,p.ch,"asks:"),el("p",null,ck.prompt)),opts=el("div",{class:"opts",role:"group","aria-label":"Answer choices"}),fb=el("div",{class:"fb",role:"status","aria-live":"polite"}),stampBox=el("div");
   var btns=[];
-  ck.opts.forEach(function(o,i){
-    var bt=el("button",{type:"button",class:"opt","data-ok":o.ok?"1":"0"},el("b",null,String.fromCharCode(65+i)),o.t);
-    bt.addEventListener("click",function(){answer(i);});btns.push(bt);opts.append(bt);
-  });
+  (function(){var ord=ck.opts.map(function(_,i){return i;});if(!S.sid){S.sid=Math.random().toString(36).slice(2,10);save();}var ks=String(key)+"|"+(S.name||"")+"|"+S.sid,h=2166136261;for(var q=0;q<ks.length;q++){h^=ks.charCodeAt(q);h=Math.imul(h,16777619);}var rr=rnd32(h>>>0);for(var q2=ord.length-1;q2>0;q2--){var j=Math.floor(rr()*(q2+1)),tmp=ord[q2];ord[q2]=ord[j];ord[j]=tmp;}
+    ord.forEach(function(i,pos){var o=ck.opts[i],bt=el("button",{type:"button",class:"opt"},el("b",null,String.fromCharCode(65+pos)),o.t);bt.addEventListener("click",function(){answer(i);});btns[i]=bt;opts.append(bt);});})();/*mc-shuffle*/
   function award(){
     if(ck.card&&CARDS[ck.card]){var c=CARDS[ck.card];S.cards[ck.card]=1;clipAdd(p.ch,{id:"s:"+ck.card,kind:"stamp",title:c.title,text:c.sub,sub:c.kind});}
     S.pts+=10;
