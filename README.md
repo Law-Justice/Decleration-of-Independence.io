@@ -70,6 +70,16 @@ An illustrated, page-turning version of the same story, for students who would r
 
 Notes: progress saves in the student's browser, and headlines and journal text are not checked beyond word counts. The illustrations are stylized, and the narration is the game's own (no invented quotations are attributed to historical figures).
 
+## Updating this site without losing student progress
+
+Student progress is saved in each student's own browser, not on GitHub, so uploading new files does not erase it. It carries over as long as three things stay the same: the web address of the site (do not rename the repository or move it to another account), the file names and folders in this package, and the student's browser and device. Every game and journal keeps the same save name from version to version, and a new version fills in any new settings automatically when it loads an older save.
+
+Good practice when you update: upload all the files in one commit, ideally outside class time. Wait a minute or two for GitHub Pages to publish. A student who already has a page open keeps the old version until they reload, which is fine. Keep the previous zip so you can roll back. In the journals, writing is saved automatically as students type, so even text they have not saved yet is recovered after a reload. In the games, writing is saved with every keystroke.
+
+## Automatic essay download
+
+When a student finishes the final reflection for the first time, their essay (a Word document) downloads automatically, once, to the device they are using. A student who finished before this feature existed is not surprised with a download; they can use the download button as before. The Case file tab (games) or the last page (journal) still has a button to download it again. The student then attaches the file to the Google Classroom assignment. Nothing is sent to the teacher automatically. If a school device blocks downloads, the Copy case file button copies the answers as text to paste into a Google Doc.
+
 ## Quiz answer order
 
 Every multiple-choice question shuffles its answer choices, so the correct answer is not always in the same spot. Each student gets their own order, which stays the same if they leave and come back, so classmates cannot share "the answer is B" and a student's keyboard focus never starts on the correct choice. This applies to the pixel-art game, the blocky 3D game, the storybook 3D game, and the graphic novel journal.

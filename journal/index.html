@@ -1102,19 +1102,19 @@ R.note=function(p){
   PR.intro=PR.intro.replace("cards from your satchel","stamps from your scrapbook").replace("open your satchel and read the Bill of Rights tab","look back at the Bill of Rights page earlier in the story");
   var nb=el("div",{class:"notebook"},el("h2",null,o.title),el("p",null,PR.intro));
   var ol=el("ol");PR.items.forEach(function(q){ol.append(el("li",null,q));});if(PR.items.length)nb.append(ol);
-  var ta=el("textarea",{"aria-label":o.title,placeholder:"Write in your own words…"});ta.value=st.text||"";
+  var ta=el("textarea",{"aria-label":o.title,placeholder:"Write in your own words…"});ta.value=(st.draft!=null?st.draft:st.text)||"";
   var cnt=el("span",{class:"wc"}),saveB=el("button",{type:"button",class:"go"},st.done?"Save changes":"Save to my journal");
   function upd(){var n=wc(ta.value);cnt.textContent=n+" / "+o.min+" words";cnt.classList.toggle("ok",n>=o.min);saveB.disabled=n<o.min;}
-  ta.addEventListener("input",upd);ta.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"&&!saveB.disabled){e.preventDefault();saveB.click();}});
+  var dT=0;ta.addEventListener("input",function(){upd();st.draft=ta.value;clearTimeout(dT);dT=setTimeout(save,500);});ta.addEventListener("blur",function(){if(st.draft!=null){st.draft=ta.value;save();}});ta.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"&&!saveB.disabled){e.preventDefault();saveB.click();}});
   if(o.bank){var bank=el("div",{class:"bank","aria-label":"Quotes from your scrapbook"});var qs=[];Object.keys(S.clip).forEach(function(k){(S.clip[k]||[]).forEach(function(c){if(c.kind==="quote")qs.push(c);});});
     qs.slice(0,8).forEach(function(c){var bt=el("button",{type:"button"},"“"+c.text.slice(0,70)+(c.text.length>70?"…":"")+"”");bt.addEventListener("click",function(){var ins="“"+c.text+"” ("+c.title+") ";var pos=ta.selectionStart||ta.value.length;ta.value=ta.value.slice(0,pos)+ins+ta.value.slice(pos);upd();ta.focus();});bank.append(bt);});
     if(qs.length)nb.append(el("p",null,el("small",null,"Quote bank from your scrapbook (tap to insert):")),bank);}
   saveB.addEventListener("click",function(){
-    var t=ta.value.trim();if(wc(t)<o.min)return;st.done=true;st.text=t;if(o.store)o.store(t);S.pts+=o.pts||50;
+    var t=ta.value.trim(),autoNow=false;if(wc(t)<o.min)return;st.done=true;st.text=t;delete st.draft;if(o.store)o.store(t);S.pts+=o.pts||50;
     clipAdd(p.ch,{id:"e:"+b.key,kind:"entry",title:entryTitle(b.key,o.title),text:t.slice(0,150)+(t.length>150?"…":"")});
-    if(b.key==="refl"){S.done=true;S.completedOn=new Date().toISOString();}
+    if(b.key==="refl"){var wd=S.done;S.done=true;S.completedOn=new Date().toISOString();if(!wd&&!S.essayAuto){S.essayAuto=1;autoNow=true;save();downloadEssay();}}
     if(/^c\d+\.n$/.test(b.key)&&chargeCount()>=5&&!S.bonus5){S.bonus5=true;S.pts+=500;if(CARDS.bonus_scholar){S.cards.bonus_scholar=1;clipAdd(p.ch,{id:"s:bonus_scholar",kind:"stamp",title:CARDS.bonus_scholar.title,text:CARDS.bonus_scholar.sub,sub:"bonus"});}toast("Five charges examined. You earned the Scholar of the Charges bonus.");}
-    save();saveB.textContent="Saved ✓ (edit and save again if you like)";toast("Saved to your journal.");updateNav();
+    save();saveB.textContent="Saved ✓ (edit and save again if you like)";toast(autoNow?"Saved. Your essay was downloaded. Attach it to your Google Classroom assignment. If it did not download, use the button on the last page.":"Saved to your journal.");updateNav();
   });
   nb.append(ta,el("div",{class:"row"},cnt,saveB),el("p",null,el("small",null,PR.tip||"")));upd();
   sec.append(side,nb);return sec;
@@ -1182,7 +1182,7 @@ R.finale=function(){
   var row=el("div",{class:"btnrow",style:"justify-content:flex-start"});
   var dl=el("button",{type:"button",class:"go",id:"dlEssay"},"Download my essay (Word document)"),bk=el("button",{type:"button",class:"ghost",id:"openBook"},"Read my book"),pr=el("button",{type:"button",class:"ghost",id:"printBook"},"Print or save my book as PDF");
   dl.addEventListener("click",downloadEssay);bk.addEventListener("click",openBook);pr.addEventListener("click",function(){openBook();setTimeout(function(){window.print();},250);});
-  row.append(dl,bk,pr);sec.append(row,el("p",{class:"sub"},"Turn in the Word document on Google Classroom. It holds your Preamble analysis, the charges you examined, and your reflection. The book is your keepsake."));
+  row.append(dl,bk,pr);sec.append(row,el("p",{class:"sub"},"Your essay was downloaded automatically when you finished the reflection. Use the button to download it again. Turn in the Word document on Google Classroom. It holds your Preamble analysis, the charges you examined, and your reflection. The book is your keepsake."));
   if(S.done)sec.append(el("p",null,el("small",null,"Completion code: "+certCode())));
   return sec;
 };

@@ -2135,7 +2135,7 @@ function monTalk(){
   openDlg([
     N("Words rise on the monument as you read them, in the voices you have heard: Mason and Jefferson, Abigail Adams and Franklin, Douglass, Lincoln, King. It has two questions for you."),
     NT("refl",{title:"The reflection brief",min:100,pts:100,bank:1,prompt:{intro:"In one or two paragraphs, explain whether the Declaration of Independence is, or is not, a reflection of American values. Use at least one quote, and answer both questions below.",items:["Which values or themes do you see as the core of the document? How do you see those values in America today, and especially in our legal system?","Where does the document contradict the society of its time, or society today?"],tip:"Tip: tap a quote in the quote bank to add it where your cursor is."},store:function(t){S.refl=t;}})
-  ],function(){S.enc.refl=1;S.ch=12;S.done=true;S.completedOn=new Date().toISOString();save();refreshHud();openFinale();});
+  ],function(){S.enc.refl=1;S.ch=12;S.done=true;S.completedOn=new Date().toISOString();save();refreshHud();autoEssay();openFinale();});
 }
 
 /* ============ DIALOG ENGINE ============ */
@@ -2501,7 +2501,7 @@ function drawTabs(){
     var cb=el("button",{class:"go",type:"button",onclick:function(){downloadCertificate();}},"Download completed essay (Word document)");
     if(!S.done){cb.disabled=true;cb.title="Unlocks when you finish the final reflection";}
     b.append(el("h3",null,"Your completed essay"));
-    b.append(el("p",null,S.done?"Your essay is a Word document with all of your written answers (the Preamble, your charges, and your reflection) formatted like an essay and ready to attach to a Google Classroom assignment.":"Your essay document unlocks when you finish the final reflection. It will gather all of your written answers into an essay, ready to attach to a Google Classroom assignment."));
+    b.append(el("p",null,S.done?"Your essay is a Word document with all of your written answers (the Preamble, your charges, and your reflection) formatted like an essay and ready to attach to a Google Classroom assignment. It also downloaded automatically when you finished. Use this button to download it again.":"Your essay document unlocks when you finish the final reflection. It will gather all of your written answers into an essay, ready to attach to a Google Classroom assignment. It will download automatically when you finish, and you can download it again here."));
     b.append(el("div",{class:"row"},cb));
     b.append(el("h3",null,"Or copy your work as text"),el("p",{class:"cap"},"Copy this and paste it into a Google Doc or your assignment. It updates as you play."),ta);
     var rowb=[copyBtn(ta,txt)];if($("dlg").hidden)rowb.push(el("button",{class:"go",type:"button",onclick:function(){closeMenu();askReset();}},"Start over"));
@@ -2515,7 +2515,7 @@ function askReset(){
 }
 function openFinale(){
   setTimeout(function(){
-    $("mbody").replaceChildren();curTab=3;openMenu();toast("Case file complete");
+    $("mbody").replaceChildren();curTab=3;openMenu();toast("Case file complete. Your essay downloaded automatically. Use the button below to download it again.");
   },200);
 }
 $("bBinder").addEventListener("click",function(){if(!modal||($("menu").hidden&&!$("dlg").hidden)){curTab=1;openMenu();this.blur();}});
@@ -2617,6 +2617,8 @@ function buildCertificate(){
 }
 function certFileName(){var n=String(S.name||"Student").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"Student";return"Declaration-of-Independence-"+n+".docx";}
 
+function autoEssay(){if(S.essayAuto||!S.done)return;S.essayAuto=1;save();try{downloadCertificate();}catch(e){}}
+/*auto-essay*/
 async function downloadCertificate(){
   if(!S.done){toast("Finish the final reflection to unlock your essay document.");return;}
   var blob=null;try{blob=buildCertificate();}catch(e){console.error(e);}
